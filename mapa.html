@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mapa de Tiendas — REFOOD PERÚ</title>
+  <meta name="theme-color" content="#1a9e5c">
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="css/styles.css">
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+  <!-- Leaflet MarkerCluster CSS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.Default.css">
+
+  <style>
+    body { overflow: hidden; }
+    .map-page { display:flex; flex-direction:column; height:100vh; padding-top:var(--nav-h); }
+
+    /* ── Toolbar ── */
+    .map-toolbar {
+      background:#fff; border-bottom:1px solid var(--border);
+      padding:.5rem 1rem; display:flex; align-items:center; gap:.4rem;
+      flex-wrap:wrap; box-shadow:var(--shadow-sm); z-index:1000; flex-shrink:0;
+    }
+    .map-toolbar-title { font-family:var(--font-display); font-weight:800; font-size:.88rem; margin-right:.3rem; white-space:nowrap; }
+    .map-filter-btn {
+      padding:.3rem .7rem; border-radius:50px; border:1.5px solid var(--border);
+      background:#fff; font-size:.76rem; font-weight:500; cursor:pointer;
+      transition:var(--transition); color:var(--text-muted); white-space:nowrap;
+    }
+    .map-filter-btn:hover { border-color:var(--primary); color:var(--primary); }
+    .map-filter-btn.active { background:var(--primary); color:#fff; border-color:var(--primary); }
+    .loc-btn {
+      margin-left:auto; padding:.34rem .8rem; border-radius:50px;
+      background:var(--primary); color:#fff; font-size:.76rem; font-weight:600;
+      border:none; cursor:pointer; transition:var(--transition); white-space:nowrap;
+    }
+    .loc-btn:hover { background:var(--primary-dark); }
+
+    /* ── Layout ── */
+    .map-body { display:flex; flex:1; overflow:hidden; }
+
+    /* ── Sidebar ── */
+    .map-sidebar {
+      width:270px; min-width:270px; background:#fff; display:flex;
+      flex-direction:column; border-right:1px solid var(--border);
+      box-shadow:3px 0 12px rgba(0,0,0,.06); z-index:500;
+    }
+    .sidebar-head {
+      padding:.75rem .9rem; background:var(--primary); color:#fff;
+      display:flex; align-items:center; justify-content:space-between; flex-shrink:0;
+    }
+    .sidebar-head-title { font-family:var(--font-display); font-weight:700; font-size:.85rem; }
+    .sidebar-count { background:rgba(255,255,255,.22); padding:.1rem .45rem; border-radius:50px; font-size:.7rem; }
+    .sidebar-search-wrap { padding:.5rem .7rem; border-bottom:1px solid var(--border); flex-shrink:0; position:relative; }
+    .sidebar-search-wrap input {
+      width:100%; padding:.38rem .7rem .38rem 1.8rem; border-radius:50px;
+      border:1.5px solid var(--border); font-size:.78rem; outline:none;
+      transition:var(--transition); background:var(--bg);
+    }
+    .sidebar-search-wrap input:focus { border-color:var(--primary); }
+    .sidebar-search-icon { position:absolute; left:1.1rem; top:50%; transform:translateY(-50%); color:var(--text-muted); font-size:.78rem; pointer-events:none; }
+    .nearby-toggle { padding:.4rem .7rem; border-bottom:1px solid var(--border); flex-shrink:0; display:flex; align-items:center; justify-content:space-between; }
+    .nearby-toggle label { font-size:.75rem; font-weight:600; color:var(--text-main); cursor:pointer; display:flex; align-items:center; gap:.4rem; }
+    .nearby-toggle input[type=range] { width:80px; accent-color:var(--primary); }
+    .nearby-km { font-size:.7rem; color:var(--primary); font-weight:700; }
+    .stores-list { overflow-y:auto; flex:1; }
+    .store-item {
+      padding:.7rem .9rem; border-bottom:1px solid var(--border);
+      cursor:pointer; transition:var(--transition); display:flex; gap:.55rem; align-items:flex-start;
+    }
+    .store-item:hover { background:#f7fbf9; }
+    .store-item.active { background:var(--primary-light); border-left:3px solid var(--primary); }
+    .store-logo {
+      width:38px; height:38px; border-radius:50%; flex-shrink:0;
+      background:linear-gradient(135deg,var(--primary),var(--accent));
+      display:flex; align-items:center; justify-content:center;
+      font-size:1.1rem; overflow:hidden;
+    }
+    .store-logo img { width:100%; height:100%; object-fit:cover; border-radius:50%; }
+    .store-name { font-weight:700; font-size:.82rem; color:var(--text-main); line-height:1.3; }
+    .store-addr { font-size:.7rem; color:var(--text-muted); margin-top:.1rem; }
+    .store-dist-badge {
+      display:inline-block; font-size:.65rem; font-weight:600; color:var(--primary);
+      background:var(--primary-light); padding:.06rem .35rem; border-radius:50px; margin-top:.15rem;
+    }
+    .store-offers-badge { font-size:.68rem; font-weight:600; margin-top:.18rem; }
+    .store-offers-badge.has { color:var(--primary-dark); }
+    .store-offers-badge.none { color:var(--text-light); }
+    .sidebar-empty { padding:2rem 1rem; text-align:center; color:var(--text-muted); font-size:.82rem; }
+
+    /* ── Map area ── */
+    .map-area { flex:1; position:relative; overflow:hidden; }
+    #leaflet-map { width:100%; height:100%; z-index:1; }
+
+    /* ── Stats bar ── */
+    .map-stats {
+      background:#fff; border-top:1px solid var(--border);
+      padding:.42rem 1rem; display:flex; gap:1.2rem; align-items:center;
+      font-size:.75rem; color:var(--text-muted); flex-shrink:0; z-index:999;
+    }
+    .map-stats strong { color:var(--primary-dark); }
+
+    /* ── Custom Leaflet popup ── */
+    .leaflet-popup-content-wrapper {
+      border-radius:14px !important;
+      box-shadow:0 8px 32px rgba(0,0,0,.18) !important;
+      border:1px solid var(--border);
+      padding:0 !important;
+      overflow:hidden;
+    }
+    .leaflet-popup-content { margin:0 !important; width:240px !important; }
+    .leaflet-popup-tip-container { display:none; }
+    .rf-popup { font-family:'Inter',sans-serif; }
+    .rf-popup-head { padding:.65rem .85rem .35rem; display:flex; align-items:center; gap:.5rem; border-bottom:1px solid #f0f0f0; }
+    .rf-popup-logo { width:38px; height:38px; border-radius:50%; background:linear-gradient(135deg,#1a9e5c,#27c96e); display:flex; align-items:center; justify-content:center; font-size:1.15rem; flex-shrink:0; overflow:hidden; }
+    .rf-popup-logo img { width:100%; height:100%; object-fit:cover; border-radius:50%; }
+    .rf-popup-title { font-weight:800; font-size:.88rem; color:#1a2e22; line-height:1.25; }
+    .rf-popup-addr { font-size:.7rem; color:#6b8070; margin-top:.08rem; }
+    .rf-popup-offers { padding:.4rem .85rem; }
+    .rf-popup-offers-title { font-size:.68rem; font-weight:700; color:#1a9e5c; text-transform:uppercase; letter-spacing:.05em; margin-bottom:.3rem; }
+    .rf-popup-offer-row { display:flex; justify-content:space-between; align-items:center; padding:.2rem 0; border-top:1px solid #f8f8f8; font-size:.74rem; }
+    .rf-popup-price { font-weight:800; color:#1a9e5c; }
+    .rf-popup-empty { font-size:.78rem; color:#9aab9f; padding:.2rem 0 .4rem; }
+    .rf-popup-footer { padding:.45rem .85rem; border-top:1px solid #f0f0f0; }
+    .rf-popup-btn { display:block; text-align:center; background:#1a9e5c; color:#fff; padding:.38rem; border-radius:8px; font-size:.78rem; font-weight:700; text-decoration:none; transition:background .15s; }
+    .rf-popup-btn:hover { background:#158a4e; }
+    .rf-popup-dist { font-size:.68rem; color:#6b8070; text-align:center; margin-top:.3rem; }
+
+    /* ── User location pulse ── */
+    .user-loc-marker {
+      width:18px; height:18px; border-radius:50%;
+      background:#4285f4; border:3px solid #fff;
+      box-shadow:0 0 0 4px rgba(66,133,244,.25);
+      animation:locPulse 2s infinite;
+    }
+    @keyframes locPulse {
+      0%,100% { box-shadow:0 0 0 4px rgba(66,133,244,.25); }
+      50%      { box-shadow:0 0 0 10px rgba(66,133,244,.08); }
+    }
+
+    /* ── Leaflet cluster override ── */
+    .marker-cluster-small  { background-color:rgba(26,158,92,.25) !important; }
+    .marker-cluster-medium { background-color:rgba(26,158,92,.35) !important; }
+    .marker-cluster-large  { background-color:rgba(26,158,92,.5)  !important; }
+    .marker-cluster-small  div,
+    .marker-cluster-medium div,
+    .marker-cluster-large  div { background-color:rgba(26,158,92,.8) !important; color:#fff !important; font-weight:700; }
+
+    /* ── Dark mode ── */
+    [data-theme="dark"] .map-toolbar,
+    [data-theme="dark"] .map-sidebar,
+    [data-theme="dark"] .map-stats { background:var(--bg-card); border-color:var(--border); }
+    [data-theme="dark"] .sidebar-search-wrap input { background:var(--bg); color:var(--text-main); border-color:var(--border); }
+    [data-theme="dark"] .store-item:hover { background:#0d1a11; }
+    [data-theme="dark"] .store-item.active { background:var(--primary-light); }
+    [data-theme="dark"] .map-filter-btn { background:var(--bg-card); border-color:var(--border); color:var(--text-muted); }
+    [data-theme="dark"] .map-filter-btn.active { background:var(--primary); color:#fff; }
+    [data-theme="dark"] .rf-popup { background:var(--bg-card); }
+
+    @media(max-width:768px) {
+      body { overflow:auto; }
+      .map-body { flex-direction:column; height:auto; }
+      .map-sidebar { width:100%; min-width:unset; border-right:none; border-bottom:1px solid var(--border); max-height:220px; }
+      .map-area { height:62vw; min-height:320px; }
+      .loc-btn { display:none; }
+      .nearby-toggle { display:none; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="map-page">
+
+  <!-- Navbar -->
+  <div id="navbar-container"></div>
+
+  <!-- Toolbar -->
+  <div class="map-toolbar">
+    <span class="map-toolbar-title">🗺️ REFOOD Perú</span>
+    <button class="map-filter-btn active" data-type="">🌟 Todas</button>
+    <button class="map-filter-btn" data-type="supermercado">🏪 Supermercados</button>
+    <button class="map-filter-btn" data-type="restaurante">🍽️ Restaurantes</button>
+    <button class="map-filter-btn" data-type="panaderia">🍞 Panaderías</button>
+    <button class="map-filter-btn" data-type="cafeteria">☕ Cafeterías</button>
+    <button class="map-filter-btn" data-type="otro">🛍️ Otros</button>
+    <button class="loc-btn" onclick="goMyLocation()">📍 Mi ubicación</button>
+  </div>
+
+  <div class="map-body">
+
+    <!-- Sidebar -->
+    <div class="map-sidebar">
+      <div class="sidebar-head">
+        <span class="sidebar-head-title">📍 Tiendas aliadas</span>
+        <span class="sidebar-count" id="sidebar-count">0</span>
+      </div>
+      <div class="sidebar-search-wrap">
+        <span class="sidebar-search-icon">🔍</span>
+        <input type="text" id="sidebar-search" placeholder="Buscar tienda, ciudad…">
+      </div>
+      <div class="nearby-toggle">
+        <label>
+          <input type="checkbox" id="nearby-check" onchange="toggleNearby()">
+          📡 Solo cercanas
+        </label>
+        <span>
+          <input type="range" id="nearby-range" min="1" max="50" value="5" oninput="updateNearbyRadius(this.value)">
+          <span class="nearby-km" id="nearby-km-label">5 km</span>
+        </span>
+      </div>
+      <div class="stores-list" id="stores-list"></div>
+    </div>
+
+    <!-- Leaflet Map -->
+    <div class="map-area">
+      <div id="leaflet-map"></div>
+    </div>
+
+  </div>
+
+  <!-- Stats bar -->
+  <div class="map-stats">
+    🏪 <strong id="stat-total">0</strong> tiendas &nbsp;|&nbsp;
+    🟢 <strong id="stat-active">0</strong> con ofertas &nbsp;|&nbsp;
+    🎁 <strong id="stat-offers-total">0</strong> ofertas activas
+  </div>
+
+</div>
+
+<!-- Leaflet JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/leaflet.markercluster.min.js"></script>
+<script src="js/navbar.js"></script>
+<script src="js/app.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/extras.js"></script>
+<script>
+'use strict';
+
+/* ── State ─────────────────────────────────────────────────── */
+let rfMap, clusterGroup;
+let allBiz = [], allOffers = [], activeType = '';
+let userLat = null, userLng = null, userMarker = null;
+let nearbyActive = false, nearbyRadius = 5; // km
+
+/* ── Init ───────────────────────────────────────────────────── */
+document.addEventListener('DOMContentLoaded', () => {
+  initLeafletMap();
+  loadData();
+  initToolbar();
+  initSidebarSearch();
+});
+
+function initLeafletMap() {
+  // Center on Peru, zoom to see the whole country
+  rfMap = L.map('leaflet-map', {
+    center: [-9.19, -75.0152],
+    zoom: 6,
+    zoomControl: true,
+    attributionControl: true,
+  });
+
+  // OpenStreetMap tiles — same data as Google Maps, completely free
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+    maxZoom: 19,
+  }).addTo(rfMap);
+
+  // Cluster group for markers
+  clusterGroup = L.markerClusterGroup({
+    showCoverageOnHover: false,
+    maxClusterRadius: 60,
+    iconCreateFunction(cluster) {
+      const count = cluster.getChildCount();
+      return L.divIcon({
+        html: `<div style="background:rgba(26,158,92,.85);color:#fff;width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.2);">${count}</div>`,
+        className: '',
+        iconSize: [38, 38],
+      });
+    }
+  });
+  rfMap.addLayer(clusterGroup);
+}
+
+/* ── Load data ───────────────────────────────────────────────── */
+function loadData() {
+  allBiz    = Store.get('rf_businesses_public', []).filter(b => b.lat && b.lng);
+  allOffers = Store.get('rf_offers', []).filter(o => o.active !== false);
+
+  // Demo businesses spread across Peru if none exist
+  if (allBiz.length === 0) {
+    allBiz = getDemoBiz();
+    Store.set('rf_businesses_public', allBiz);
+  }
+
+  applyFilters();
+}
+
+/* ── Demo businesses (spread across Peru) ───────────────────── */
+function getDemoBiz() {
+  return [
+    { id:'b001', name:'Bodega El Pacífico',   type:'supermercado', address:'Av. Larco 300, Miraflores, Lima',       lat:-12.1176, lng:-77.0282, logo:'🏪', rating:4.5, totalOffers:3 },
+    { id:'b002', name:'Panadería La Aurora',  type:'panaderia',    address:'Jr. Callao 120, Cercado, Lima',         lat:-12.0564, lng:-77.0376, logo:'🍞', rating:4.2, totalOffers:2 },
+    { id:'b003', name:'Café Selva',           type:'cafeteria',    address:'Av. José Larco 890, Barranco, Lima',    lat:-12.1469, lng:-77.0206, logo:'☕', rating:4.7, totalOffers:1 },
+    { id:'b004', name:'Restaurante Cuzco',    type:'restaurante',  address:'Plaza de Armas, Cusco',                 lat:-13.5170, lng:-71.9785, logo:'🍽️', rating:4.8, totalOffers:4 },
+    { id:'b005', name:'Bodega Arequipeña',    type:'supermercado', address:'Av. Independencia 450, Arequipa',       lat:-16.3989, lng:-71.5350, logo:'🏪', rating:4.3, totalOffers:2 },
+    { id:'b006', name:'Panadería Trujillana', type:'panaderia',    address:'Jr. Pizarro 780, Trujillo',             lat: -8.1116, lng:-79.0286, logo:'🍞', rating:4.6, totalOffers:3 },
+    { id:'b007', name:'La Granja Piura',      type:'restaurante',  address:'Av. Loreto 200, Piura',                 lat: -5.1945, lng:-80.6328, logo:'🍽️', rating:4.4, totalOffers:2 },
+    { id:'b008', name:'Mercado Iquitos',      type:'otro',         address:'Av. Prospero 640, Iquitos',             lat: -3.7491, lng:-73.2538, logo:'🛍️', rating:4.1, totalOffers:1 },
+    { id:'b009', name:'Supermercado Puno',    type:'supermercado', address:'Jr. Lima 320, Puno',                    lat:-15.8402, lng:-70.0219, logo:'🏪', rating:4.0, totalOffers:2 },
+    { id:'b010', name:'Café Chiclayo',        type:'cafeteria',    address:'Av. Balta 750, Chiclayo',              lat: -6.7714, lng:-79.8409, logo:'☕', rating:4.5, totalOffers:1 },
+    { id:'b011', name:'Restaurante Huancayo', type:'restaurante',  address:'Jr. Giraldez 340, Huancayo',            lat:-12.0651, lng:-75.2049, logo:'🍽️', rating:4.3, totalOffers:2 },
+    { id:'b012', name:'Bodega Ica',           type:'supermercado', address:'Av. Municipalidad 180, Ica',            lat:-14.0678, lng:-75.7286, logo:'🏪', rating:4.2, totalOffers:1 },
+    { id:'b013', name:'Panadería Cajamarca',  type:'panaderia',    address:'Jr. del Comercio 550, Cajamarca',       lat: -7.1619, lng:-78.5127, logo:'🍞', rating:4.5, totalOffers:3 },
+    { id:'b014', name:'Café Tacna',           type:'cafeteria',    address:'Av. San Martín 220, Tacna',             lat:-18.0057, lng:-70.2488, logo:'☕', rating:4.4, totalOffers:1 },
+    { id:'b015', name:'La Huerta Callao',     type:'restaurante',  address:'Av. Sáenz Peña 400, Callao',           lat:-12.0565, lng:-77.1254, logo:'🍽️', rating:4.6, totalOffers:3 },
+  ];
+}
+
+/* ── Filter & render ─────────────────────────────────────────── */
+function applyFilters() {
+  let list = activeType ? allBiz.filter(b => b.type === activeType) : [...allBiz];
+
+  // Search filter
+  const q = (document.getElementById('sidebar-search')?.value || '').trim().toLowerCase();
+  if (q) list = list.filter(b =>
+    b.name.toLowerCase().includes(q) ||
+    b.address.toLowerCase().includes(q) ||
+    (b.city || '').toLowerCase().includes(q)
+  );
+
+  // Nearby filter
+  if (nearbyActive && userLat !== null) {
+    list = list.filter(b => haversine(userLat, userLng, b.lat, b.lng) <= nearbyRadius);
+    list.sort((a, b) => haversine(userLat, userLng, a.lat, a.lng) - haversine(userLat, userLng, b.lat, b.lng));
+  }
+
+  renderMarkers(list);
+  populateSidebar(list);
+  updateStats(list);
+}
+
+/* ── Markers ─────────────────────────────────────────────────── */
+function renderMarkers(list) {
+  clusterGroup.clearLayers();
+  list.forEach(biz => {
+    const icon = createPinIcon(biz);
+    const marker = L.marker([biz.lat, biz.lng], { icon, bizId: biz.id });
+    marker.on('click', () => { openPopup(biz, marker); highlightSidebar(biz.id); });
+    clusterGroup.addLayer(marker);
+    marker._bizId = biz.id;
+  });
+}
+
+function createPinIcon(biz) {
+  const logoHtml = biz.photo
+    ? `<div style="width:34px;height:34px;border-radius:50%;overflow:hidden;border:2.5px solid #fff;"><img src="${biz.photo}" style="width:100%;height:100%;object-fit:cover;"></div>`
+    : `<div style="width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#1a9e5c,#27c96e);border:2.5px solid #fff;display:flex;align-items:center;justify-content:center;font-size:1rem;">${biz.logo || '🏪'}</div>`;
+
+  return L.divIcon({
+    html: `<div style="position:relative;display:flex;flex-direction:column;align-items:center;">
+      <div style="background:#fff;border-radius:50%;box-shadow:0 3px 10px rgba(0,0,0,.22);padding:2px;">${logoHtml}</div>
+      <div style="width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:8px solid #1a9e5c;margin-top:-1px;"></div>
+    </div>`,
+    className: '',
+    iconSize: [44, 52],
+    iconAnchor: [22, 52],
+    popupAnchor: [0, -54],
+  });
+}
+
+/* ── Popup ───────────────────────────────────────────────────── */
+function openPopup(biz, marker) {
+  const bizOffers = allOffers.filter(o => o.businessId === biz.id).slice(0, 3);
+  const logoHtml = biz.photo
+    ? `<img src="${biz.photo}" alt="${biz.name}">`
+    : biz.logo || '🏪';
+
+  const offersHtml = bizOffers.length
+    ? `<div class="rf-popup-offers-title">🌟 ${bizOffers.length} oferta${bizOffers.length>1?'s':''}</div>` +
+      bizOffers.map(o => `
+        <div class="rf-popup-offer-row">
+          <span>${escapeHTML(o.emoji||'')} ${escapeHTML(o.name)}</span>
+          <span class="rf-popup-price">${formatCurrency(o.discountPrice)}</span>
+        </div>`).join('')
+    : `<div class="rf-popup-offers-title">Sin ofertas hoy</div><div class="rf-popup-empty">Vuelve pronto 🌿</div>`;
+
+  const distHtml = (userLat !== null)
+    ? `<div class="rf-popup-dist">📍 ${haversine(userLat, userLng, biz.lat, biz.lng).toFixed(1)} km de ti</div>` : '';
+
+  const popup = L.popup({ maxWidth:260, className:'rf-leaflet-popup' })
+    .setContent(`
+      <div class="rf-popup">
+        <div class="rf-popup-head">
+          <div class="rf-popup-logo">${logoHtml}</div>
+          <div>
+            <div class="rf-popup-title">${escapeHTML(biz.name)}</div>
+            <div class="rf-popup-addr">📍 ${escapeHTML(biz.address)}</div>
+          </div>
+        </div>
+        <div class="rf-popup-offers">${offersHtml}</div>
+        <div class="rf-popup-footer">
+          <a class="rf-popup-btn" href="ofertas.html">Ver ofertas →</a>
+          ${distHtml}
+        </div>
+      </div>`);
+
+  marker.bindPopup(popup).openPopup();
+}
+
+/* ── Sidebar ─────────────────────────────────────────────────── */
+function populateSidebar(list) {
+  const cont = document.getElementById('stores-list');
+  const count = document.getElementById('sidebar-count');
+  if (!cont) return;
+  if (count) count.textContent = list.length;
+
+  if (!list.length) {
+    cont.innerHTML = `<div class="sidebar-empty">😕 No se encontraron tiendas<br><small>Prueba a ampliar el radio o quita los filtros</small></div>`;
+    return;
+  }
+
+  cont.innerHTML = list.map(biz => {
+    const offers = allOffers.filter(o => o.businessId === biz.id);
+    const dist   = (userLat !== null) ? haversine(userLat, userLng, biz.lat, biz.lng) : null;
+    const logoHtml = biz.photo
+      ? `<img src="${biz.photo}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`
+      : (biz.logo || '🏪');
+    return `
+      <div class="store-item" data-biz-id="${biz.id}" onclick="flyToBiz('${biz.id}')">
+        <div class="store-logo">${logoHtml}</div>
+        <div style="flex:1;min-width:0;">
+          <div class="store-name">${escapeHTML(biz.name)}</div>
+          <div class="store-addr">${escapeHTML(biz.address)}</div>
+          ${dist !== null ? `<span class="store-dist-badge">📍 ${dist.toFixed(1)} km</span>` : ''}
+          <div class="store-offers-badge ${offers.length?'has':'none'}">
+            ${offers.length ? `🟢 ${offers.length} oferta${offers.length>1?'s':''}` : '⚫ Sin ofertas'}
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function highlightSidebar(bizId) {
+  document.querySelectorAll('.store-item').forEach(el => {
+    el.classList.toggle('active', el.dataset.bizId === bizId);
+    if (el.dataset.bizId === bizId) el.scrollIntoView({ block:'nearest', behavior:'smooth' });
+  });
+}
+
+function flyToBiz(bizId) {
+  const biz = allBiz.find(b => b.id === bizId);
+  if (!biz) return;
+  rfMap.flyTo([biz.lat, biz.lng], 16, { duration: 0.8 });
+  highlightSidebar(bizId);
+  // Open popup on the matching marker
+  clusterGroup.eachLayer(m => { if (m._bizId === bizId) { clusterGroup.zoomToShowLayer(m, () => { openPopup(biz, m); }); } });
+}
+
+/* ── Toolbar filters ─────────────────────────────────────────── */
+function initToolbar() {
+  document.querySelectorAll('.map-filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.map-filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      activeType = btn.dataset.type || '';
+      applyFilters();
+    });
+  });
+}
+
+/* ── Sidebar search ──────────────────────────────────────────── */
+function initSidebarSearch() {
+  document.getElementById('sidebar-search')?.addEventListener('input', applyFilters);
+}
+
+/* ── Nearby ──────────────────────────────────────────────────── */
+function toggleNearby() {
+  nearbyActive = document.getElementById('nearby-check').checked;
+  if (nearbyActive && userLat === null) {
+    goMyLocation(true);
+  } else {
+    applyFilters();
+  }
+}
+
+function updateNearbyRadius(val) {
+  nearbyRadius = parseFloat(val);
+  document.getElementById('nearby-km-label').textContent = val + ' km';
+  if (nearbyActive) applyFilters();
+}
+
+/* ── Geolocation ─────────────────────────────────────────────── */
+function goMyLocation(silent) {
+  if (!navigator.geolocation) { showToast('Geolocalización no disponible', 'warning'); return; }
+  navigator.geolocation.getCurrentPosition(pos => {
+    userLat = pos.coords.latitude;
+    userLng = pos.coords.longitude;
+
+    if (userMarker) rfMap.removeLayer(userMarker);
+    userMarker = L.marker([userLat, userLng], {
+      icon: L.divIcon({
+        html: `<div class="user-loc-marker"></div>`,
+        className: '',
+        iconSize: [18, 18],
+        iconAnchor: [9, 9],
+      }),
+      zIndexOffset: 1000,
+    }).addTo(rfMap);
+    userMarker.bindPopup('<b>📍 Estás aquí</b>').openPopup();
+
+    rfMap.flyTo([userLat, userLng], 14, { duration: 1 });
+    if (!silent) showToast('📍 Ubicación encontrada', 'success');
+    applyFilters();
+  }, () => {
+    if (!silent) showToast('No se pudo obtener tu ubicación', 'error');
+    document.getElementById('nearby-check').checked = false;
+    nearbyActive = false;
+  });
+}
+
+/* ── Stats ───────────────────────────────────────────────────── */
+function updateStats(list) {
+  const ids     = new Set(list.map(b => b.id));
+  const bizOffs = allOffers.filter(o => ids.has(o.businessId));
+  const withOff = list.filter(b => bizOffs.some(o => o.businessId === b.id));
+  document.getElementById('stat-total').textContent        = list.length;
+  document.getElementById('stat-active').textContent       = withOff.length;
+  document.getElementById('stat-offers-total').textContent = bizOffs.length;
+}
+
+/* ── Haversine distance (km) ─────────────────────────────────── */
+function haversine(lat1, lng1, lat2, lng2) {
+  const R = 6371, dLat = (lat2-lat1)*Math.PI/180, dLng = (lng2-lng1)*Math.PI/180;
+  const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Herramientas — REFOOD PERÚ</title>
+  <meta name="theme-color" content="#1a9e5c">
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="css/styles.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <style>
+    .tools-hero { background:linear-gradient(135deg,#0d2b1a,#1a4f30); padding:calc(var(--nav-h) + 2.5rem) 2rem 2.5rem; color:#fff; }
+    .tools-hero h1 { font-family:var(--font-display); font-size:clamp(1.6rem,3vw,2.2rem); font-weight:900; margin-bottom:.4rem; }
+    .tools-hero p { color:rgba(255,255,255,.72); font-size:.93rem; }
+
+    .tools-body { max-width:1100px; margin:0 auto; padding:2rem 1.5rem 4rem; }
+    .tools-grid { display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; }
+
+    .tool-card {
+      background:var(--bg-card); border-radius:var(--radius-xl); padding:2rem;
+      border:1px solid var(--border); box-shadow:var(--shadow-sm); transition:var(--transition);
+    }
+    .tool-card:hover { box-shadow:var(--shadow-md); }
+    .tool-header { display:flex; align-items:center; gap:.8rem; margin-bottom:1.2rem; }
+    .tool-icon { width:48px; height:48px; border-radius:14px; background:var(--primary-light); display:flex; align-items:center; justify-content:center; font-size:1.5rem; flex-shrink:0; }
+    .tool-title { font-family:var(--font-display); font-weight:800; font-size:1.05rem; }
+    .tool-desc { font-size:.83rem; color:var(--text-muted); margin-top:.15rem; }
+
+    /* Savings Calculator */
+    .slider-group { margin-bottom:1rem; }
+    .slider-label { display:flex; justify-content:space-between; font-size:.82rem; margin-bottom:.3rem; }
+    .slider-label span:last-child { font-weight:700; color:var(--primary-dark); }
+    input[type="range"] { width:100%; accent-color:var(--primary); cursor:pointer; }
+    .calc-result {
+      background:linear-gradient(135deg,var(--primary-dark),var(--primary));
+      border-radius:var(--radius-lg); padding:1.2rem; text-align:center; margin-top:1rem; color:#fff;
+    }
+    .calc-result-num { font-family:var(--font-display); font-size:2.2rem; font-weight:900; color:#48d888; }
+    .calc-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:.8rem; margin-top:.8rem; }
+    .calc-mini { background:rgba(255,255,255,.1); border-radius:var(--radius-sm); padding:.6rem; text-align:center; }
+    .calc-mini-num { font-family:var(--font-display); font-weight:900; font-size:1rem; }
+    .calc-mini-lbl { font-size:.68rem; opacity:.75; margin-top:.15rem; }
+
+    /* AI Recommender */
+    .ai-chat {
+      background:var(--bg); border-radius:var(--radius-lg); padding:1rem;
+      max-height:380px; overflow-y:auto; display:flex; flex-direction:column; gap:.6rem;
+      scroll-behavior:smooth;
+    }
+    .ai-msg { display:flex; gap:.5rem; align-items:flex-end; }
+    .ai-msg.user { flex-direction:row-reverse; }
+    .ai-bubble {
+      padding:.65rem .9rem; border-radius:var(--radius-md); font-size:.84rem;
+      line-height:1.62; max-width:84%; word-break:break-word;
+    }
+    .ai-bubble.bot  {
+      background:var(--primary-light); color:var(--primary-dark);
+      border-radius:0 var(--radius-md) var(--radius-md) var(--radius-md);
+      box-shadow:0 1px 3px rgba(26,158,92,.12);
+    }
+    .ai-bubble.user {
+      background:linear-gradient(135deg,var(--primary),var(--primary-dark));
+      color:#fff; border-radius:var(--radius-md) 0 var(--radius-md) var(--radius-md);
+      box-shadow:0 2px 8px rgba(26,158,92,.25);
+    }
+    .ai-avatar {
+      width:28px; height:28px; border-radius:50%; flex-shrink:0;
+      background:linear-gradient(135deg,var(--primary),var(--primary-dark));
+      display:flex; align-items:center; justify-content:center; font-size:.82rem;
+      box-shadow:0 1px 4px rgba(0,0,0,.15);
+    }
+    .ai-input-row { display:flex; gap:.5rem; margin-top:.8rem; }
+    .ai-input {
+      flex:1; padding:.6rem 1rem; border-radius:50px;
+      border:1.5px solid var(--border); font-size:.85rem; outline:none;
+      background:var(--bg-card); color:var(--text-main); transition:var(--transition);
+    }
+    .ai-input:focus { border-color:var(--primary); box-shadow:0 0 0 3px rgba(26,158,92,.1); }
+    .ai-input:disabled { opacity:.55; cursor:wait; }
+    .ai-send {
+      padding:.6rem 1.1rem; border-radius:50px; background:var(--primary);
+      color:#fff; border:none; font-weight:700; font-size:.88rem;
+      cursor:pointer; transition:var(--transition); min-width:44px;
+    }
+    .ai-send:hover { background:var(--primary-dark); transform:scale(1.06); }
+    .rec-card {
+      background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-md);
+      padding:.8rem 1rem; display:flex; gap:.7rem; align-items:center; cursor:pointer;
+      transition:var(--transition);
+    }
+    .rec-card:hover { border-color:var(--primary); background:var(--primary-light); transform:translateX(3px); }
+    .rec-emoji { font-size:1.5rem; flex-shrink:0; }
+    .rec-name  { font-weight:700; font-size:.84rem; }
+    .rec-price { font-weight:900; color:var(--primary-dark); font-size:.9rem; }
+    .rec-orig  { font-size:.73rem; color:var(--text-light); text-decoration:line-through; }
+    [data-theme="dark"] .ai-bubble.bot  { background:rgba(26,158,92,.15); color:#48d888; }
+    [data-theme="dark"] .rec-card:hover { background:rgba(26,158,92,.12); border-color:var(--primary); }
+
+    /* Price History Chart */
+    .price-history-select { margin-bottom:.8rem; }
+
+    /* Comparator */
+    .compare-select-row { display:grid; grid-template-columns:1fr 1fr; gap:.8rem; margin-bottom:1rem; }
+    .compare-result { display:grid; grid-template-columns:1fr auto 1fr; gap:.8rem; align-items:center; }
+    .compare-col { background:var(--bg); border-radius:var(--radius-md); padding:1rem; text-align:center; transition:var(--transition); }
+    .compare-col.winner { background:var(--primary-light); border:2px solid var(--primary); }
+    .compare-vs { font-family:var(--font-display); font-weight:900; font-size:1.1rem; color:var(--text-muted); text-align:center; }
+    .compare-emoji { font-size:2rem; display:block; margin-bottom:.4rem; }
+    .compare-name  { font-weight:700; font-size:.82rem; margin-bottom:.5rem; line-height:1.3; }
+    .compare-disc  { font-family:var(--font-display); font-size:1.3rem; font-weight:900; color:var(--primary-dark); }
+    .compare-orig  { font-size:.78rem; color:var(--text-light); text-decoration:line-through; }
+    .compare-pct   { display:inline-block; background:var(--danger); color:#fff; font-size:.72rem; font-weight:700; padding:.15rem .5rem; border-radius:50px; margin-top:.3rem; }
+    .compare-win-badge { background:var(--primary); color:#fff; font-size:.75rem; font-weight:700; padding:.2rem .65rem; border-radius:50px; display:inline-block; margin-top:.4rem; }
+
+    /* Accessibility panel */
+    .access-grid { display:grid; grid-template-columns:1fr 1fr; gap:.7rem; }
+    .access-btn {
+      padding:.7rem; border-radius:var(--radius-sm); border:1.5px solid var(--border);
+      background:var(--bg); cursor:pointer; font-size:.82rem; font-weight:600;
+      text-align:center; transition:var(--transition); color:var(--text-main);
+    }
+    .access-btn:hover, .access-btn.active { border-color:var(--primary); background:var(--primary-light); color:var(--primary-dark); }
+
+    /* Lang toggle */
+    .lang-row { display:flex; gap:.5rem; }
+    .lang-btn { flex:1; padding:.6rem; border-radius:var(--radius-sm); border:1.5px solid var(--border); background:var(--bg); cursor:pointer; font-size:.88rem; font-weight:600; transition:var(--transition); display:flex; align-items:center; justify-content:center; gap:.4rem; }
+    .lang-btn:hover, .lang-btn.active { border-color:var(--primary); background:var(--primary-light); color:var(--primary-dark); }
+
+    [data-theme="dark"] .tool-card,[data-theme="dark"] .rec-card { background:var(--bg-card); border-color:var(--border); }
+    [data-theme="dark"] .ai-chat { background:var(--bg); }
+    [data-theme="dark"] .compare-col { background:var(--bg); }
+    [data-theme="dark"] .access-btn { background:var(--bg-card); border-color:var(--border); color:var(--text-main); }
+
+    @media(max-width:900px) { .tools-grid{grid-template-columns:1fr;} .compare-select-row{grid-template-columns:1fr;} }
+    @media(max-width:640px) {
+      .calc-sliders-grid { grid-template-columns:1fr !important; gap:1rem !important; }
+    }
+    @media(max-width:500px) { .calc-grid{grid-template-columns:1fr 1fr;} .access-grid{grid-template-columns:1fr;} }
+    /* AI chips */
+    .ai-chip { padding:.3rem .8rem; border-radius:50px; border:1.5px solid var(--border); background:var(--bg-card); font-size:.77rem; font-weight:500; cursor:pointer; color:var(--text-muted); transition:var(--transition); white-space:nowrap; }
+    .ai-chip:hover { border-color:var(--primary); color:var(--primary); background:var(--primary-light); }
+    /* Full-width AI card */
+    .tools-grid .tool-card[style*="grid-column"] { grid-column:1/-1; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.35} }
+    @keyframes spin   { to{transform:rotate(360deg)} }
+    @media(max-width:768px){
+      .tools-grid .tool-card[style*="grid-column"] .ai-two-col { grid-template-columns:1fr !important; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="tools-hero">
+  <div style="max-width:1100px;margin:0 auto;">
+    <h1>🛠️ Herramientas REFOOD</h1>
+    <p>Calculadora de ahorro, recomendaciones IA, comparador de precios y más</p>
+  </div>
+</div>
+
+<div class="tools-body">
+  <div class="tools-grid">
+
+    <!-- 1. Savings Calculator -->
+    <div class="tool-card" style="grid-column:1/-1;">
+      <div class="tool-header" style="justify-content:center;text-align:center;flex-direction:column;">
+        <div class="tool-icon" style="margin:0 auto .6rem;">💰</div>
+        <div>
+          <div class="tool-title">Calculadora de ahorro</div>
+          <div class="tool-desc">¿Cuánto ahorrarías al año usando REFOOD?</div>
+        </div>
+      </div>
+
+      <div style="max-width:640px;margin:0 auto;">
+        <div class="calc-sliders-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:1.2rem;">
+          <div class="slider-group" style="margin-bottom:0;">
+            <div class="slider-label"><span>Visitas por semana</span><span id="sv-vis">3 veces</span></div>
+            <input type="range" id="sv-visits" min="1" max="7" value="3" oninput="updateSavingsCalc()">
+          </div>
+          <div class="slider-group" style="margin-bottom:0;">
+            <div class="slider-label"><span>Ahorro promedio por visita</span><span id="sv-avg">S/ 20</span></div>
+            <input type="range" id="sv-avg-range" min="5" max="60" value="20" oninput="updateSavingsCalc()">
+          </div>
+        </div>
+
+        <div class="calc-result">
+          <div style="font-size:.85rem;opacity:.85;margin-bottom:.3rem;">Ahorrarías al año</div>
+          <div class="calc-result-num" id="sv-annual" style="font-size:2.8rem;">S/ 3,120</div>
+          <div class="calc-grid" style="max-width:480px;margin:.8rem auto 0;">
+            <div class="calc-mini"><div class="calc-mini-num" id="sv-weekly">S/ 60</div><div class="calc-mini-lbl">por semana</div></div>
+            <div class="calc-mini"><div class="calc-mini-num" id="sv-monthly">S/ 260</div><div class="calc-mini-lbl">por mes</div></div>
+            <div class="calc-mini"><div class="calc-mini-num" id="sv-co2">78 kg</div><div class="calc-mini-lbl">CO₂ menos</div></div>
+          </div>
+        </div>
+
+        <div style="margin-top:1.2rem;text-align:center;">
+          <a href="ofertas.html" class="btn btn-primary">🛍️ Empezar a ahorrar</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. AI Recommender — Claude API -->
+    <div class="tool-card" style="grid-column:1/-1;">
+      <div class="tool-header">
+        <div class="tool-icon" style="background:linear-gradient(135deg,#0d2b1a,#1a9e5c);font-size:1.3rem;">🤖</div>
+        <div>
+          <div class="tool-title">Asistente IA REFOOD <span style="font-size:.7rem;background:var(--primary-light);color:var(--primary-dark);padding:.15rem .5rem;border-radius:50px;font-weight:600;margin-left:.4rem;">Claude API</span></div>
+          <div class="tool-desc">Pregúntame sobre ofertas, recetas, ahorro, distritos o lo que necesites</div>
+        </div>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:.4rem;font-size:.75rem;color:var(--primary-dark);">
+          <span style="width:7px;height:7px;background:#22c55e;border-radius:50%;animation:pulse 2s infinite;display:inline-block;"></span>
+          En línea
+        </div>
+      </div>
+
+      <div class="ai-two-col" style="display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;">
+
+        <!-- Chat column -->
+        <div>
+          <div class="ai-chat" id="ai-chat" style="max-height:360px;"></div>
+
+          <!-- Quick chips -->
+          <div id="ai-chips" style="display:flex;flex-wrap:wrap;gap:.4rem;margin:.7rem 0;">
+            <button class="ai-chip" onclick="quickAsk('¿Qué ofertas tienen el mayor descuento ahora mismo?',this.parentElement)">🔥 Mayor descuento</button>
+            <button class="ai-chip" onclick="quickAsk('¿Qué productos vencen hoy?',this.parentElement)">⏰ Vencen hoy</button>
+            <button class="ai-chip" onclick="quickAsk('¿Qué hay de lácteos disponible?',this.parentElement)">🥛 Lácteos</button>
+            <button class="ai-chip" onclick="quickAsk('Dame ideas de recetas con los productos disponibles',this.parentElement)">🍳 Recetas</button>
+            <button class="ai-chip" onclick="quickAsk('¿Qué hay en Miraflores?',this.parentElement)">📍 Miraflores</button>
+            <button class="ai-chip" onclick="quickAsk('¿Cuánto puedo ahorrar comprando 3 productos hoy?',this.parentElement)">💰 Cuánto ahorro</button>
+          </div>
+
+          <div class="ai-input-row">
+            <input class="ai-input" id="ai-input"
+              placeholder="Pregunta sobre ofertas, recetas, ahorro…"
+              onkeydown="if(event.key==='Enter'&&!event.shiftKey)sendAI()">
+            <button class="ai-send" id="ai-send-btn" onclick="sendAI()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Recommendations column -->
+        <div>
+          <div style="font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);margin-bottom:.7rem;">🛍️ Productos recomendados</div>
+          <div id="ai-recs" style="display:flex;flex-direction:column;gap:.5rem;">
+            <div style="text-align:center;padding:2rem 1rem;color:var(--text-muted);font-size:.85rem;">
+              <div style="font-size:2rem;margin-bottom:.5rem;">💬</div>
+              Haz una pregunta al asistente para ver recomendaciones personalizadas
+            </div>
+          </div>
+          <div id="ai-total-saving" style="display:none;margin-top:.8rem;background:var(--primary-light);border-radius:var(--radius-md);padding:.7rem 1rem;font-size:.82rem;color:var(--primary-dark);text-align:center;font-weight:600;"></div>
+        </div>
+      </div>
+
+      <!-- Conversation history button -->
+      <div style="display:flex;justify-content:flex-end;margin-top:.8rem;gap:.5rem;">
+        <button class="btn btn-ghost btn-sm" onclick="clearAIChat()" style="font-size:.78rem;color:var(--text-muted);">🗑️ Limpiar chat</button>
+        <button class="btn btn-ghost btn-sm" onclick="exportAIChat()" style="font-size:.78rem;color:var(--text-muted);">📋 Copiar conversación</button>
+      </div>
+    </div>
+
+    <!-- 3. Price History -->
+    <div class="tool-card">
+      <div class="tool-header">
+        <div class="tool-icon">📈</div>
+        <div><div class="tool-title">Historial de precios</div><div class="tool-desc">Cómo ha variado el precio de un producto en los últimos 14 días</div></div>
+      </div>
+      <div class="price-history-select">
+        <select class="form-control" id="ph-select" onchange="renderPriceHistory()">
+          <option value="">Selecciona un producto…</option>
+        </select>
+      </div>
+      <canvas id="price-chart" height="180"></canvas>
+      <div id="ph-info" style="margin-top:.8rem;font-size:.82rem;color:var(--text-muted);text-align:center;"></div>
+    </div>
+
+    <!-- 4. Offer Comparator -->
+    <div class="tool-card">
+      <div class="tool-header">
+        <div class="tool-icon">⚖️</div>
+        <div><div class="tool-title">Comparador de ofertas</div><div class="tool-desc">Compara 2 productos y descubre cuál tiene mejor precio</div></div>
+      </div>
+      <div class="compare-select-row">
+        <div>
+          <label class="form-label" style="font-size:.8rem;">Producto A</label>
+          <select class="form-control" id="cmp-a" onchange="renderComparator()">
+            <option value="">Selecciona…</option>
+          </select>
+        </div>
+        <div>
+          <label class="form-label" style="font-size:.8rem;">Producto B</label>
+          <select class="form-control" id="cmp-b" onchange="renderComparator()">
+            <option value="">Selecciona…</option>
+          </select>
+        </div>
+      </div>
+      <div id="compare-result"></div>
+    </div>
+
+    <!-- 5. Accessibility -->
+    <div class="tool-card">
+      <div class="tool-header">
+        <div class="tool-icon">♿</div>
+        <div><div class="tool-title">Accesibilidad</div><div class="tool-desc">Modo daltónico, alto contraste y preferencias visuales</div></div>
+      </div>
+      <div style="font-size:.83rem;color:var(--text-muted);margin-bottom:.8rem;">Simulación de visión de color:</div>
+      <div class="access-grid" id="colorblind-btns">
+        <button class="access-btn active" onclick="setColorMode('normal',this)">👁️ Normal</button>
+        <button class="access-btn" onclick="setColorMode('deuteranopia',this)">🟢 Deuteranopía</button>
+        <button class="access-btn" onclick="setColorMode('protanopia',this)">🔴 Protanopía</button>
+        <button class="access-btn" onclick="setColorMode('tritanopia',this)">🔵 Tritanopía</button>
+        <button class="access-btn" onclick="setColorMode('highcontrast',this)" style="grid-column:1/-1;">⚫ Alto Contraste</button>
+      </div>
+      <div style="margin-top:1.2rem;">
+        <div style="font-size:.83rem;color:var(--text-muted);margin-bottom:.6rem;">Tamaño de texto:</div>
+        <div style="display:flex;gap:.5rem;">
+          <button class="access-btn" onclick="setFontSize(.9)">A-</button>
+          <button class="access-btn" onclick="setFontSize(1)">A</button>
+          <button class="access-btn" onclick="setFontSize(1.1)">A+</button>
+          <button class="access-btn" onclick="setFontSize(1.2)">A++</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 6. Language + Export -->
+    <div class="tool-card">
+      <div class="tool-header">
+        <div class="tool-icon">🌐</div>
+        <div><div class="tool-title">Idioma y exportar</div><div class="tool-desc">Cambia el idioma o exporta tu historial</div></div>
+      </div>
+      <div style="font-size:.83rem;color:var(--text-muted);margin-bottom:.7rem;">Idioma de la interfaz:</div>
+      <div class="lang-row" style="margin-bottom:1.5rem;">
+        <button class="lang-btn active" data-lang="es" onclick="setLanguage('es')">🇵🇪 Español</button>
+        <button class="lang-btn" data-lang="en" onclick="setLanguage('en')">🇬🇧 English</button>
+      </div>
+      <div style="font-size:.83rem;color:var(--text-muted);margin-bottom:.7rem;">Exportar mis datos:</div>
+      <div style="display:flex;flex-direction:column;gap:.6rem;">
+        <button class="btn btn-secondary btn-sm btn-full" onclick="exportReservationsPDF()">📄 Exportar historial en PDF</button>
+        <button class="btn btn-secondary btn-sm btn-full" onclick="exportFavoritesCSV()">📊 Exportar favoritos CSV</button>
+        <button class="btn btn-danger btn-sm btn-full" onclick="clearMyData()">🗑️ Eliminar mis datos</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="js/navbar.js"></script>
+<script src="js/app.js"></script>
+<script src="js/extras.js"></script>
+<script>
+let priceChart = null;
+
+
+document.addEventListener('DOMContentLoaded', () => {
+  const offers = Store.get('rf_offers', []).filter(o => o.active !== false);
+
+  // Populate offer selects
+  const opts = '<option value="">Selecciona…</option>' +
+    offers.map(o => `<option value="${o.id}">${escapeHTML(o.name.slice(0,40))} — ${escapeHTML(o.businessName)}</option>`).join('');
+  ['ph-select','cmp-a','cmp-b'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = opts;
+  });
+
+  updateSavingsCalc();
+  initAIChat();
+});
+
+/* Savings Calc */
+function updateSavingsCalc() {
+  const v = parseInt(document.getElementById('sv-visits')?.value || 3);
+  const a = parseInt(document.getElementById('sv-avg-range')?.value || 20);
+  const r = calcAnnualSavings(v, a);
+  document.getElementById('sv-vis').textContent    = `${v} vece${v>1?'s':''}`;
+  document.getElementById('sv-avg').textContent    = `S/ ${a}`;
+  document.getElementById('sv-annual').textContent = `S/ ${r.annual.toLocaleString('es-PE',{minimumFractionDigits:0})}`;
+  document.getElementById('sv-weekly').textContent = `S/ ${r.weekly.toFixed(0)}`;
+  document.getElementById('sv-monthly').textContent= `S/ ${r.monthly.toFixed(0)}`;
+  document.getElementById('sv-co2').textContent    = `${r.co2.toFixed(0)} kg`;
+}
+
+/* AI Chat */
+
+
+
+
+
+
+/* ── ASISTENTE IA REAL (Claude API) ─────────────── */
+const aiHistory = [];   // conversación completa para contexto
+
+function buildSystemPrompt() {
+  const offers    = Store.get('rf_offers', []).filter(o => o.active !== false);
+  const today     = new Date().toISOString().split('T')[0];
+  const todayOffs = offers.filter(o => o.expiryDate === today);
+  const user      = Auth.getUser();
+
+  const offersList = offers.slice(0, 30).map(o =>
+    `• ${o.emoji} ${o.name} — ${o.businessName} (${o.category}) — S/${o.discountPrice} (antes S/${o.originalPrice}, -${discountPct(o.originalPrice,o.discountPrice)}%) — Vence: ${o.expiryDate === today ? 'HOY' : o.expiryDate}`
+  ).join('\n');
+
+  return `Eres el Asistente IA de REFOOD PERÚ, una plataforma que conecta supermercados y restaurantes en Lima con usuarios que compran alimentos próximos a vencer a precios con descuento de hasta 70%.
+
+Tu nombre es "Asistente REFOOD" y tu personalidad es: amigable, entusiasta sobre la sostenibilidad, conocedor del mercado alimentario peruano, y siempre orientado a ayudar al usuario a ahorrar dinero y reducir el desperdicio.
+
+${user ? `El usuario se llama ${user.name}.` : 'El usuario no ha iniciado sesión.'}
+
+OFERTAS DISPONIBLES AHORA EN LIMA (${offers.length} total, ${todayOffs.length} vencen hoy):
+${offersList}
+
+CATEGORÍAS disponibles: lácteos, panadería, frutas, verduras, bebidas, restaurante, carnes, snacks.
+DISTRITOS con tiendas: San Isidro, Miraflores, Surco, San Borja, La Molina, Barranco, Lince, Jesús María, Magdalena, Los Olivos, Callao, San Miguel.
+
+REGLAS IMPORTANTES:
+- Responde SIEMPRE en español peruano, de forma concisa y útil (máx 3-4 oraciones).
+- Cuando recomiendes ofertas, usa formato: "🛍️ **Nombre** — S/X.XX en Tienda (−X%)"
+- Si te preguntan por categorías o distritos, filtra y muestra los mejores resultados.
+- Menciona el ahorro en soles siempre que sea relevante.
+- Si el usuario tiene hambre, está buscando ingredientes o quiere cocinar algo, sugiere combinaciones de ofertas.
+- Puedes dar consejos sobre cómo conservar alimentos o recetas rápidas con los productos disponibles.
+- Si no hay ofertas relevantes, sé honesto pero sugiere alternativas.
+- Añade emojis relevantes para hacer la conversación más visual y amena.
+- Al final de cada respuesta, si recomiendas productos, indica cuánto ahorraría el usuario en total.`;
+}
+
+async function sendAI() {
+  const input = document.getElementById('ai-input');
+  const btn   = document.getElementById('ai-send-btn');
+  const q     = input?.value.trim();
+  if (!q) return;
+
+  addAIMessage('user', q);
+  input.value = '';
+  input.disabled = true;
+  if (btn) { btn.disabled = true; btn.innerHTML = '<span style="font-size:.85rem;animation:spin .8s linear infinite;display:inline-block;">⏳</span>'; }
+
+  // Hide chips on first message
+  document.getElementById('ai-chips')?.style.setProperty('display', 'none');
+
+  aiHistory.push({ role: 'user', content: q });
+
+  const typingId = 'typing-' + Date.now();
+  addTypingIndicator(typingId);
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model:      'claude-sonnet-4-6',
+        max_tokens: 600,
+        system:     buildSystemPrompt(),
+        messages:   aiHistory,
+      })
+    });
+
+    removeTypingIndicator(typingId);
+
+    if (!response.ok) {
+      const errData = await response.json().catch(() => ({}));
+      throw new Error(errData.error?.message || `HTTP ${response.status}`);
+    }
+
+    const data = await response.json();
+    const txt  = data.content?.[0]?.text || 'No pude responder ahora.';
+    aiHistory.push({ role: 'assistant', content: txt });
+
+    // Render with markdown-lite
+    const html = txt
+      .replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.*?)\*/g, '<em>$1</em>')
+      .replace(/•/g, '•')
+      .replace(/\n/g, '<br>');
+
+    addAIMessage('bot', html);
+    autoShowOffers(txt, q);
+
+  } catch (err) {
+    removeTypingIndicator(typingId);
+    console.warn('Claude API, usando fallback local:', err.message);
+    const fb = smartLocalFallback(q);
+    aiHistory.push({ role: 'assistant', content: fb.text });
+    const fbHtml = fb.text
+      .replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')
+      .replace(/\n/g,'<br>');
+    addAIMessage('bot', fbHtml);
+    if (fb.recs.length) renderAIRecs(fb.recs);
+  } finally {
+    input.disabled = false;
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>`;
+    }
+    input.focus();
+  }
+}
+
+
+function addTypingIndicator(id) {
+  const chat = document.getElementById('ai-chat');
+  if (!chat) return;
+  const div = document.createElement('div');
+  div.className = 'ai-msg';
+  div.id = id;
+  div.innerHTML = `
+    <div class="ai-avatar">🌿</div>
+    <div class="ai-bubble bot" style="display:flex;gap:.3rem;align-items:center;padding:.8rem 1rem;">
+      <span style="width:7px;height:7px;background:var(--primary);border-radius:50%;animation:typingDot 1.2s infinite .0s;display:inline-block;"></span>
+      <span style="width:7px;height:7px;background:var(--primary);border-radius:50%;animation:typingDot 1.2s infinite .2s;display:inline-block;"></span>
+      <span style="width:7px;height:7px;background:var(--primary);border-radius:50%;animation:typingDot 1.2s infinite .4s;display:inline-block;"></span>
+    </div>`;
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+
+  // Add animation if not added yet
+  if (!document.getElementById('typing-style')) {
+    const style = document.createElement('style');
+    style.id = 'typing-style';
+    style.textContent = `@keyframes typingDot{0%,80%,100%{transform:scale(.8);opacity:.5}40%{transform:scale(1.1);opacity:1}}`;
+    document.head.appendChild(style);
+  }
+}
+
+function removeTypingIndicator(id) {
+  document.getElementById(id)?.remove();
+}
+
+function addAIMessage(role, text) {
+  const chat = document.getElementById('ai-chat');
+  if (!chat) return;
+  const isBot = role === 'bot';
+
+  // Convert markdown-lite to HTML
+  const html = text
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+    .replace(/`(.*?)`/g, '<code style="background:rgba(0,0,0,.08);padding:.1rem .3rem;border-radius:3px;font-size:.85em;">$1</code>')
+    .replace(/\n/g, '<br>');
+
+  const div = document.createElement('div');
+  div.className = `ai-msg ${role}`;
+  div.innerHTML = `
+    ${isBot ? `<div class="ai-avatar">🌿</div>` : ''}
+    <div class="ai-bubble ${role}">${html}</div>
+    ${!isBot ? `<div class="ai-avatar" style="background:linear-gradient(135deg,var(--accent),#f7c04a);">👤</div>` : ''}`;
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function autoShowOffers(text, query) {
+  // Extract product names from AI response and show matching offers
+  const offers  = Store.get('rf_offers', []).filter(o => o.active !== false);
+  const ql      = query.toLowerCase();
+  const tl      = text.toLowerCase();
+
+  const categories = ['lácteos','panadería','frutas','verduras','bebidas','restaurante','carnes','snacks'];
+  const matchedCat = categories.find(c => ql.includes(c) || tl.includes(c));
+
+  let recs = [];
+  if (matchedCat) {
+    recs = offers.filter(o => o.category === matchedCat).slice(0, 3);
+  } else {
+    // Try name matching from the AI response
+    recs = offers.filter(o =>
+      text.toLowerCase().includes(o.name.toLowerCase().slice(0, 8)) ||
+      ql.split(' ').some(word => word.length > 3 && o.name.toLowerCase().includes(word))
+    ).slice(0, 3);
+  }
+
+  if (recs.length) renderAIRecs(recs);
+}
+
+function smartLocalFallback(q) {
+  // Enhanced local fallback when API is unavailable
+  const offers = Store.get('rf_offers', []).filter(o => o.active !== false);
+  const ql     = q.toLowerCase();
+  const today  = new Date().toISOString().split('T')[0];
+  let recs = [], text = '';
+
+  const catMap = {
+    'lácteo':'lácteos','leche':'lácteos','queso':'lácteos','yogurt':'lácteos',
+    'pan':'panadería','torta':'panadería','croissant':'panadería','panadería':'panadería',
+    'fruta':'frutas','manzana':'frutas','plátano':'frutas','mango':'frutas',
+    'verdura':'verduras','lechuga':'verduras','tomate':'verduras','espinaca':'verduras',
+    'bebida':'bebidas','jugo':'bebidas','gaseosa':'bebidas','agua':'bebidas',
+    'pollo':'restaurante','pizza':'restaurante','sandwich':'restaurante','hamburguesa':'restaurante',
+    'carne':'carnes','snack':'snacks','galleta':'snacks',
+  };
+
+  const cat = Object.entries(catMap).find(([k]) => ql.includes(k))?.[1];
+
+  if (ql.includes('barato') || ql.includes('económic') || ql.includes('menos')) {
+    recs = [...offers].sort((a,b) => a.discountPrice - b.discountPrice).slice(0,3);
+    text = '💰 Los productos más económicos disponibles ahora mismo:';
+  } else if (ql.includes('descuento') || ql.includes('oferta') || ql.includes('mayor ahorro')) {
+    recs = [...offers].sort((a,b) => discountPct(b.originalPrice,b.discountPrice) - discountPct(a.originalPrice,a.discountPrice)).slice(0,3);
+    text = '🔥 Las ofertas con mayor descuento en este momento:';
+  } else if (ql.includes('hoy') || ql.includes('vence') || ql.includes('urgen')) {
+    recs = offers.filter(o => o.expiryDate === today).slice(0,3);
+    text = recs.length ? '⏰ ¡Atención! Estos productos vencen HOY:' : 'No hay productos que venzan hoy. ¡Revisa mañana!';
+  } else if (cat) {
+    recs = offers.filter(o => o.category === cat).slice(0,3);
+    text = recs.length ? `🌿 Encontré estas ofertas de ${cat}:` : `😕 No hay ofertas de ${cat} ahora. ¡Pronto habrá más!`;
+  } else if (ql.includes('miraflores') || ql.includes('surco') || ql.includes('san isidro') || ql.includes('barranco')) {
+    const district = ['miraflores','surco','san isidro','barranco','san borja','la molina','lince'].find(d => ql.includes(d)) || '';
+    const bizInDist = Store.get('rf_businesses_public',[]).filter(b => b.district?.toLowerCase().includes(district));
+    const bizIds    = new Set(bizInDist.map(b => b.id));
+    recs = offers.filter(o => bizIds.has(o.businessId)).slice(0,3);
+    text = recs.length ? `📍 Ofertas en ${district}:` : `No encontré ofertas en ${district} en este momento.`;
+  } else {
+    recs = [...offers].sort((a,b) => discountPct(b.originalPrice,b.discountPrice) - discountPct(a.originalPrice,a.discountPrice)).slice(0,3);
+    text = `🌟 No entendí exactamente qué buscas, pero aquí las mejores ofertas del momento:`;
+  }
+
+  return { text, recs };
+}
+
+function initAIChat() {
+  const chat = document.getElementById('ai-chat');
+  if (!chat) return;
+  const user    = Auth.getUser();
+  const name    = user ? user.name.split(' ')[0] : 'amigo/a';
+  const offers  = Store.get('rf_offers', []).filter(o => o.active !== false);
+  const today   = new Date().toISOString().split('T')[0];
+  const todayN  = offers.filter(o => o.expiryDate === today).length;
+  const topDisc = Math.max(...offers.map(o => discountPct(o.originalPrice, o.discountPrice)));
+
+  addAIMessage('bot',
+    `¡Hola, **${name}**! 👋 Soy el Asistente IA de REFOOD PERÚ, impulsado por Claude.\n\n` +
+    `Ahora mismo tenemos **${offers.length} ofertas activas** en Lima` +
+    (todayN > 0 ? `, incluyendo **${todayN} que vencen hoy**` : '') +
+    ` con descuentos de hasta **${topDisc}%**.\n\n` +
+    `Puedo ayudarte a:\n• Encontrar las mejores ofertas por categoría o distrito\n• Sugerirte recetas con los productos disponibles\n• Calcular cuánto ahorras\n• Responder cualquier pregunta sobre REFOOD\n\n¿Qué buscas hoy? 🌿`
+  );
+}
+
+function quickAsk(question, chipsContainer) {
+  if (chipsContainer) chipsContainer.style.display = 'none';
+  const input = document.getElementById('ai-input');
+  if (input) input.value = question;
+  sendAI();
+}
+
+function renderAIRecs(recs) {
+  const container = document.getElementById('ai-recs');
+  const totalEl   = document.getElementById('ai-total-saving');
+  if (!container || !recs.length) return;
+
+  const totalSaving = recs.reduce((s, o) => s + (o.originalPrice - o.discountPrice), 0);
+
+  container.innerHTML = recs.map(o => {
+    const p_      = discountPct(o.originalPrice, o.discountPrice);
+    const saving  = formatCurrency(o.originalPrice - o.discountPrice);
+    return `
+    <div class="rec-card" onclick="addToCart('${o.id}')">
+      <span class="rec-emoji">${escapeHTML(o.emoji || '🍱')}</span>
+      <div style="flex:1;min-width:0;">
+        <div class="rec-name">${escapeHTML(o.name)}</div>
+        <div style="font-size:.72rem;color:var(--text-muted);">📍 ${escapeHTML(o.businessName)}</div>
+        <div style="font-size:.7rem;color:var(--primary);font-weight:600;margin-top:.1rem;">Ahorra ${saving}</div>
+      </div>
+      <div style="text-align:right;flex-shrink:0;">
+        <div class="rec-price">${formatCurrency(o.discountPrice)}</div>
+        <div class="rec-orig">${formatCurrency(o.originalPrice)}</div>
+        <div style="font-size:.65rem;background:var(--danger);color:#fff;padding:.12rem .4rem;border-radius:50px;margin-top:.2rem;font-weight:700;display:inline-block;">-${p_}%</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  if (totalEl && totalSaving > 0) {
+    totalEl.style.display = 'block';
+    totalEl.innerHTML = `💰 Ahorro total con estos ${recs.length} productos: <strong>${formatCurrency(totalSaving)}</strong>`;
+  }
+}
+
+function clearAIChat() {
+  const chat  = document.getElementById('ai-chat');
+  const recs  = document.getElementById('ai-recs');
+  const total = document.getElementById('ai-total-saving');
+  const chips = document.getElementById('ai-chips');
+  if (chat)  chat.innerHTML = '';
+  if (recs)  recs.innerHTML = '<div style="text-align:center;padding:2rem 1rem;color:var(--text-muted);font-size:.85rem;"><div style="font-size:2rem;margin-bottom:.5rem;">💬</div>Haz una pregunta al asistente</div>';
+  if (total) { total.style.display = 'none'; }
+  if (chips) chips.style.display = 'flex';
+  aiHistory.length = 0;
+  setTimeout(() => initAIChat(), 100);
+}
+
+function exportAIChat() {
+  if (!aiHistory.length) { showToast('No hay conversación para copiar', 'info'); return; }
+  let text = '=== Conversación con Asistente REFOOD PERÚ ===\n\n';
+  aiHistory.forEach(m => {
+    text += `[${m.role === 'user' ? 'Tú' : 'Asistente IA'}]:\n${m.content}\n\n`;
+  });
+  navigator.clipboard?.writeText(text)
+    .then(() => showToast('Conversación copiada al portapapeles 📋', 'success'))
+    .catch(() => showToast('No se pudo copiar', 'error'));
+}
+
+
+/* Price History */
+function renderPriceHistory() {
+  const offerId = document.getElementById('ph-select')?.value;
+  if (!offerId) return;
+  const history = getPriceHistory(offerId);
+  const offer   = Store.get('rf_offers',[]).find(o=>o.id===offerId);
+  const isDark  = Store.get('rf_theme')==='dark';
+  const tc      = isDark ? '#7aaa88' : '#5a7060';
+  const gc      = isDark ? '#1a2e22' : '#e8f0ec';
+
+  if (priceChart) priceChart.destroy();
+  const ctx = document.getElementById('price-chart');
+  if (!ctx) return;
+
+  priceChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: history.map(h=>h.date),
+      datasets: [{
+        label: 'Precio (S/)',
+        data: history.map(h=>h.price),
+        borderColor: '#1a9e5c', backgroundColor: 'rgba(26,158,92,.1)',
+        borderWidth: 2.5, pointRadius: 3, fill: true, tension: .4,
+      }]
+    },
+    options: {
+      responsive:true,
+      plugins: { legend:{display:false}, tooltip:{ callbacks:{ label: ctx => `S/ ${ctx.parsed.y.toFixed(2)}` } } },
+      scales: {
+        x: { ticks:{color:tc,maxRotation:45}, grid:{color:gc} },
+        y: { ticks:{color:tc, callback:v=>'S/ '+v}, grid:{color:gc}, beginAtZero:false }
+      }
+    }
+  });
+
+  const min = Math.min(...history.map(h=>h.price));
+  const max = Math.max(...history.map(h=>h.price));
+  const info = document.getElementById('ph-info');
+  if (info && offer) {
+    info.innerHTML = `<strong>${escapeHTML(offer.name)}</strong> · Mín: <span style="color:var(--primary-dark);font-weight:700;">S/ ${min.toFixed(2)}</span> · Máx: <span style="color:var(--danger);font-weight:700;">S/ ${max.toFixed(2)}</span>`;
+  }
+}
+
+/* Comparator */
+function renderComparator() {
+  const id1 = document.getElementById('cmp-a')?.value;
+  const id2 = document.getElementById('cmp-b')?.value;
+  const container = document.getElementById('compare-result');
+  if (!container) return;
+  if (!id1 || !id2) { container.innerHTML = '<p style="text-align:center;color:var(--text-muted);padding:1rem;font-size:.85rem;">Selecciona dos productos para comparar</p>'; return; }
+  if (id1 === id2) { container.innerHTML = '<p style="text-align:center;color:var(--danger);padding:.8rem;font-size:.85rem;">Selecciona dos productos diferentes</p>'; return; }
+
+  const cmp = compareOffers(id1, id2);
+  if (!cmp) return;
+  const { o1, o2, winner } = cmp;
+  const p1 = discountPct(o1.originalPrice, o1.discountPrice);
+  const p2 = discountPct(o2.originalPrice, o2.discountPrice);
+
+  container.innerHTML = `
+    <div class="compare-result">
+      <div class="compare-col ${winner==='o1'?'winner':''}">
+        <span class="compare-emoji">${escapeHTML(o1.emoji||'🍱')}</span>
+        <div class="compare-name">${escapeHTML(o1.name)}</div>
+        <div class="compare-disc">${formatCurrency(o1.discountPrice)}</div>
+        <div class="compare-orig">${formatCurrency(o1.originalPrice)}</div>
+        <div class="compare-pct">-${p1}%</div>
+        ${winner==='o1'?'<div class="compare-win-badge">🏆 Mejor precio</div>':''}
+      </div>
+      <div class="compare-vs">VS</div>
+      <div class="compare-col ${winner==='o2'?'winner':''}">
+        <span class="compare-emoji">${escapeHTML(o2.emoji||'🍱')}</span>
+        <div class="compare-name">${escapeHTML(o2.name)}</div>
+        <div class="compare-disc">${formatCurrency(o2.discountPrice)}</div>
+        <div class="compare-orig">${formatCurrency(o2.originalPrice)}</div>
+        <div class="compare-pct">-${p2}%</div>
+        ${winner==='o2'?'<div class="compare-win-badge">🏆 Mejor precio</div>':''}
+      </div>
+    </div>
+    <p style="text-align:center;font-size:.8rem;color:var(--text-muted);margin-top:.8rem;">
+      Diferencia: <strong>${formatCurrency(Math.abs(o1.discountPrice-o2.discountPrice))}</strong>
+    </p>`;
+}
+
+/* Colorblind */
+function setColorMode(mode, btn) {
+  applyColorBlindMode(mode);
+  document.querySelectorAll('.access-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+/* Font size */
+function setFontSize(scale) {
+  document.documentElement.style.fontSize = (16 * scale) + 'px';
+  Store.set('rf_fontsize', scale);
+  showToast(`Tamaño de texto: ${Math.round(scale*100)}%`, 'info', 1500);
+}
+
+/* Export CSV */
+function exportFavoritesCSV() {
+  const user = Auth.getUser();
+  if (!user) { showToast('Inicia sesión primero', 'warning'); return; }
+  const favIds = Store.get('rf_favorites', []);
+  const offers = Store.get('rf_offers', []).filter(o => favIds.includes(o.id));
+  if (!offers.length) { showToast('No tienes favoritos guardados', 'info'); return; }
+  const csv = 'Nombre,Tienda,Precio Original,Precio Oferta,Descuento%,Vencimiento\n' +
+    offers.map(o => `"${o.name}","${o.businessName}",${o.originalPrice},${o.discountPrice},${discountPct(o.originalPrice,o.discountPrice)},${o.expiryDate}`).join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const a    = document.createElement('a');
+  a.href     = URL.createObjectURL(blob);
+  a.download = 'refood_favoritos.csv';
+  a.click();
+  showToast('CSV descargado ✅', 'success');
+}
+
+/* Clear data */
+function clearMyData() {
+  if (!confirm('¿Seguro que quieres eliminar todos tus datos? Esta acción es irreversible.')) return;
+  ['rf_current_user','rf_cart','rf_favorites','rf_reservations','rf_notifs','rf_onboarded'].forEach(k => Store.remove(k));
+  showToast('Datos eliminados', 'info');
+  setTimeout(() => window.location.href = 'index.html', 1200);
+}
+
+// Apply saved font size
+const savedSize = Store.get('rf_fontsize', 1);
+if (savedSize !== 1) document.documentElement.style.fontSize = (16 * savedSize) + 'px';
+</script>
+</body>
+</html>

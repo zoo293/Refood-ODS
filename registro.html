@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registrarse — REFOOD PERÚ</title>
+  <meta name="theme-color" content="#1a9e5c">
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="css/styles.css">
+  <style>
+    .user-dropdown{position:absolute;right:0;top:calc(100% + .5rem);background:#fff;border:1px solid var(--border);border-radius:var(--radius-md);box-shadow:var(--shadow-md);min-width:190px;z-index:100;overflow:hidden;}
+    .user-dropdown a{display:block;padding:.7rem 1rem;font-size:.9rem;color:var(--text-main);transition:var(--transition);}
+    .user-dropdown a:hover{background:var(--primary-light);color:var(--primary);}
+    .user-dropdown hr{border:none;border-top:1px solid var(--border);}
+    #nav-auth-zone{position:relative;display:flex;align-items:center;gap:.6rem;}
+    .auth-page-bg {
+      min-height:100vh; padding-top:var(--nav-h);
+      background: linear-gradient(135deg,#f7fbf9 0%,#d1f5e3 100%);
+      display:flex; align-items:center; justify-content:center;
+      padding: calc(var(--nav-h) + 2rem) 1.5rem 2rem;
+    }
+    .register-card { max-width: 520px; }
+    .benefits-mini { display:grid; grid-template-columns:1fr 1fr 1fr; gap:.6rem; margin-bottom:1.5rem; }
+    .benefit-mini { background:var(--primary-light); border-radius:var(--radius-sm); padding:.6rem; text-align:center; font-size:.78rem; color:var(--primary-dark); font-weight:600; }
+    .form-row { display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
+    .strength-bar { height:4px; border-radius:50px; background:var(--border); margin-top:.4rem; overflow:hidden; }
+    .strength-fill { height:100%; border-radius:50px; transition:width .3s,background .3s; width:0%; }
+    @media(max-width:480px){.form-row{grid-template-columns:1fr;}.benefits-mini{grid-template-columns:1fr;}}
+  </style>
+</head>
+<body>
+
+<div class="auth-page-bg">
+  <div class="auth-card register-card fade-in">
+    <div class="auth-logo">
+      <div class="logo-big">🌿</div>
+      <h1 class="auth-title">Crea tu cuenta gratis</h1>
+      <p class="auth-subtitle">Únete y empieza a rescatar alimentos hoy mismo</p>
+    </div>
+
+    <div class="benefits-mini">
+      <div class="benefit-mini">💰 Ahorra hasta 70%</div>
+      <div class="benefit-mini">🌍 Cuida el planeta</div>
+      <div class="benefit-mini">⚡ Acceso inmediato</div>
+    </div>
+
+    <form id="form-register" novalidate>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="reg-name">Nombre completo *</label>
+          <div class="input-icon-wrap">
+            <span class="input-icon">👤</span>
+            <input class="form-control" type="text" id="reg-name" placeholder="Ana García" autocomplete="name">
+          </div>
+          <span class="form-error"></span>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="reg-phone">Teléfono *</label>
+          <div class="input-icon-wrap">
+            <span class="input-icon">📱</span>
+            <input class="form-control" type="tel" id="reg-phone" placeholder="987 654 321" autocomplete="tel">
+          </div>
+          <span class="form-error"></span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="reg-email">Correo electrónico *</label>
+        <div class="input-icon-wrap">
+          <span class="input-icon">📧</span>
+          <input class="form-control" type="email" id="reg-email" placeholder="tu@correo.com" autocomplete="email">
+        </div>
+        <span class="form-error"></span>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="reg-password">Contraseña *</label>
+          <div class="input-icon-wrap">
+            <span class="input-icon">🔒</span>
+            <input class="form-control" type="password" id="reg-password" placeholder="Mínimo 6 caracteres" autocomplete="new-password">
+            <span class="input-icon toggle-pass" id="toggle-reg-pass" style="right:.9rem;left:auto;pointer-events:all;cursor:pointer">👁️</span>
+          </div>
+          <div class="strength-bar"><div class="strength-fill" id="strength-fill"></div></div>
+          <span class="form-error"></span>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="reg-confirm">Confirmar contraseña *</label>
+          <div class="input-icon-wrap">
+            <span class="input-icon">🔒</span>
+            <input class="form-control" type="password" id="reg-confirm" placeholder="Repite tu contraseña" autocomplete="new-password">
+          </div>
+          <span class="form-error"></span>
+        </div>
+      </div>
+
+      <div class="form-group" style="flex-direction:row;align-items:flex-start;gap:.6rem;margin-bottom:.8rem;">
+        <input type="checkbox" id="reg-terms" style="width:16px;height:16px;margin-top:3px;accent-color:var(--primary);flex-shrink:0;">
+        <label for="reg-terms" style="font-size:.85rem;color:var(--text-muted);cursor:pointer;line-height:1.5;">
+          Acepto los <a href="#" style="color:var(--primary);font-weight:600;">términos y condiciones</a> y la
+          <a href="#" style="color:var(--primary);font-weight:600;">política de privacidad</a> de REFOOD PERÚ
+        </label>
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-full btn-lg">
+        🚀 Crear mi cuenta gratis
+      </button>
+    </form>
+
+    <div class="auth-switch mt-2">
+      ¿Ya tienes cuenta? <a href="login.html">Inicia sesión</a>
+    </div>
+    <div class="auth-switch mt-1" style="font-size:.82rem;">
+      ¿Eres un negocio? <a href="registro-negocio.html">Registra tu negocio</a>
+    </div>
+  </div>
+</div>
+
+<script src="js/navbar.js"></script>
+<script src="js/app.js"></script>
+<script src="js/auth.js"></script>
+<script>
+  // Password strength indicator
+  document.getElementById('reg-password')?.addEventListener('input', function() {
+    const val = this.value;
+    const fill = document.getElementById('strength-fill');
+    if (!fill) return;
+    let strength = 0;
+    if (val.length >= 6)  strength++;
+    if (val.length >= 10) strength++;
+    if (/[A-Z]/.test(val)) strength++;
+    if (/[0-9]/.test(val)) strength++;
+    if (/[^A-Za-z0-9]/.test(val)) strength++;
+    const pct = (strength / 5) * 100;
+    const colors = ['#e74c3c','#e74c3c','#f0a500','#1a9e5c','#1a9e5c'];
+    fill.style.width = pct + '%';
+    fill.style.background = colors[Math.max(0,strength-1)] || '#e74c3c';
+  });
+
+  // Toggle password
+  document.getElementById('toggle-reg-pass')?.addEventListener('click', function() {
+    const inp = document.getElementById('reg-password');
+    if (inp) { inp.type = inp.type === 'password' ? 'text' : 'password'; this.textContent = inp.type === 'password' ? '👁️' : '🙈'; }
+  });
+
+  // Redirect if already logged in
+  document.addEventListener('DOMContentLoaded', () => {
+    if (Auth.isUser()) window.location.href = 'ofertas.html';
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mapa de Calor — REFOOD PERÚ</title>
+  <meta name="theme-color" content="#1a9e5c">
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="css/styles.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <style>
+    .heat-hero { background:linear-gradient(135deg,#0d2b1a,#1a4f30); padding:calc(var(--nav-h) + 2.5rem) 2rem 2.5rem; color:#fff; }
+    .heat-hero h1 { font-family:var(--font-display); font-size:clamp(1.6rem,3vw,2.4rem); font-weight:900; margin-bottom:.4rem; }
+    .heat-body { max-width:1100px; margin:0 auto; padding:2rem 1.5rem 4rem; }
+    .heat-layout { display:grid; grid-template-columns:1fr 340px; gap:1.5rem; }
+
+    /* SVG Heat Map */
+    .heat-map-card { background:var(--bg-card); border-radius:var(--radius-xl); padding:1.5rem; border:1px solid var(--border); box-shadow:var(--shadow-sm); }
+    .heat-map-title { font-family:var(--font-display); font-weight:800; font-size:1.05rem; margin-bottom:1rem; display:flex; align-items:center; justify-content:space-between; }
+    .heat-svg { width:100%; max-width:600px; display:block; margin:0 auto; }
+
+    .heat-district { transition:opacity .2s, stroke-width .2s; cursor:pointer; stroke:#fff; stroke-width:1.5; }
+    .heat-district:hover { stroke-width:3; opacity:.85; }
+    .heat-label { font-size:9px; fill:#fff; font-family:Arial,sans-serif; font-weight:700; text-shadow:0 1px 2px rgba(0,0,0,.5); pointer-events:none; text-anchor:middle; dominant-baseline:middle; }
+
+    /* Legend */
+    .heat-legend { display:flex; gap:.5rem; align-items:center; flex-wrap:wrap; margin-top:1rem; font-size:.78rem; color:var(--text-muted); }
+    .heat-legend-grad { height:12px; width:200px; border-radius:50px; background:linear-gradient(90deg,#d1f5e3,#1a9e5c,#0d2b1a); flex-shrink:0; }
+
+    /* Sidebar stats */
+    .heat-sidebar { display:flex; flex-direction:column; gap:1.2rem; }
+    .district-rank-card { background:var(--bg-card); border-radius:var(--radius-lg); padding:1.4rem; border:1px solid var(--border); box-shadow:var(--shadow-sm); }
+    .district-rank-title { font-family:var(--font-display); font-weight:800; font-size:.95rem; margin-bottom:1rem; }
+    .district-row { display:flex; align-items:center; gap:.7rem; margin-bottom:.7rem; padding-bottom:.7rem; border-bottom:1px solid var(--border); }
+    .district-row:last-child { margin-bottom:0; border-bottom:none; padding-bottom:0; }
+    .district-rank-num { font-family:var(--font-display); font-weight:900; font-size:1.1rem; width:24px; text-align:center; flex-shrink:0; }
+    .district-bar-wrap { flex:1; }
+    .district-name { font-size:.82rem; font-weight:700; margin-bottom:.2rem; }
+    .district-mini-bar { height:6px; border-radius:50px; background:linear-gradient(90deg,var(--primary-light),var(--primary)); }
+    .district-num { font-family:var(--font-display); font-size:.9rem; font-weight:800; color:var(--primary-dark); flex-shrink:0; }
+
+    /* Chart card */
+    .chart-wrap-heat { background:var(--bg-card); border-radius:var(--radius-lg); padding:1.4rem; border:1px solid var(--border); box-shadow:var(--shadow-sm); }
+
+    /* Tooltip */
+    .heat-tooltip {
+      position:fixed; z-index:1000; background:var(--bg-dark); color:#fff;
+      padding:.6rem 1rem; border-radius:var(--radius-md); font-size:.82rem;
+      pointer-events:none; box-shadow:var(--shadow-lg); display:none;
+      border-left:3px solid var(--primary);
+    }
+
+    [data-theme="dark"] .heat-map-card,.district-rank-card,.chart-wrap-heat { background:var(--bg-card); border-color:var(--border); }
+    @media(max-width:900px) { .heat-layout{grid-template-columns:1fr;} }
+  </style>
+</head>
+<body>
+
+<div class="heat-hero">
+  <div style="max-width:1100px;margin:0 auto;">
+    <h1>🌡️ Mapa de Calor — Rescates en Lima</h1>
+    <p style="color:rgba(255,255,255,.72);font-size:.93rem;">Visualiza en qué distritos de Lima se rescatan más alimentos</p>
+  </div>
+</div>
+
+<div id="heat-tooltip" class="heat-tooltip"></div>
+
+<div class="heat-body">
+  <div class="heat-layout">
+
+    <!-- Heat Map SVG -->
+    <div class="heat-map-card">
+      <div class="heat-map-title">
+        <span>🗺️ Intensidad de rescates por distrito</span>
+        <span style="font-size:.78rem;color:var(--text-muted);" id="heat-total-label">Cargando…</span>
+      </div>
+
+      <svg class="heat-svg" viewBox="0 0 580 440" xmlns="http://www.w3.org/2000/svg">
+        <!-- Ocean -->
+        <rect width="580" height="440" fill="#c5dff0"/>
+        <!-- Land base -->
+        <path fill="#daeeda" d="M150 0 L580 0 L580 440 L150 440 Q130 400 125 360 Q118 320 122 280 Q115 240 110 200 Q105 160 112 120 Q120 70 135 35 Z"/>
+
+        <!-- Districts - colored by JS -->
+        <path id="hd-callao"      class="heat-district" d="M150 0 L350 0 L350 80 L260 90 L200 110 L155 130 L148 90 Q140 50 150 0 Z"/>
+        <path id="hd-losolivos"   class="heat-district" d="M350 0 L520 0 L520 90 L420 95 L350 82 Z"/>
+        <path id="hd-sanmiguel"   class="heat-district" d="M155 130 L200 110 L260 90 L258 162 L220 185 L168 196 L155 165 Z"/>
+        <path id="hd-magdalena"   class="heat-district" d="M168 196 L220 185 L258 162 L282 168 L290 212 L268 232 L222 230 L172 218 Z"/>
+        <path id="hd-jesusmaria"  class="heat-district" d="M260 90 L350 80 L360 130 L330 148 L290 158 L258 162 L260 90 Z"/>
+        <path id="hd-lince"       class="heat-district" d="M330 148 L360 130 L412 135 L422 174 L388 194 L350 198 L330 148 Z"/>
+        <path id="hd-sanisidro"   class="heat-district" d="M290 158 L330 148 L350 198 L388 194 L378 245 L345 260 L310 265 L282 250 L268 232 L290 212 Z"/>
+        <path id="hd-sanborja"    class="heat-district" d="M388 194 L422 174 L492 180 L510 220 L492 258 L448 270 L400 258 L365 248 L378 245 Z"/>
+        <path id="hd-miraflores"  class="heat-district" d="M172 218 L222 230 L268 232 L282 250 L310 265 L312 302 L285 322 L250 332 L208 325 L168 305 L155 272 L158 238 Z"/>
+        <path id="hd-surco"       class="heat-district" d="M365 248 L400 258 L448 270 L492 258 L526 272 L540 328 L518 368 L462 382 L400 372 L345 355 L328 315 L335 278 Z"/>
+        <path id="hd-barranco"    class="heat-district" d="M168 305 L208 325 L250 332 L285 322 L312 302 L322 335 L298 358 L258 372 L218 365 L175 345 L162 322 Z"/>
+        <path id="hd-lamolina"    class="heat-district" d="M526 272 L578 255 L578 380 L540 390 L480 398 L420 385 L380 372 L345 355 L400 372 L462 382 L518 368 L540 328 Z"/>
+        <path id="hd-chorrillos"  class="heat-district" d="M168 345 L218 365 L258 372 L298 358 L322 335 L340 345 L358 378 L340 415 L295 435 L228 435 L168 418 L148 385 Z"/>
+
+        <!-- District labels -->
+        <text class="heat-label" x="240" y="48">CALLAO</text>
+        <text class="heat-label" x="435" y="48">LOS OLIVOS</text>
+        <text class="heat-label" x="198" y="148">SAN MIGUEL</text>
+        <text class="heat-label" x="225" y="205">MAGDALENA</text>
+        <text class="heat-label" x="305" y="118">JESÚS MARÍA</text>
+        <text class="heat-label" x="372" y="162">LINCE</text>
+        <text class="heat-label" x="322" y="210">SAN ISIDRO</text>
+        <text class="heat-label" x="445" y="225">SAN BORJA</text>
+        <text class="heat-label" x="238" y="278">MIRAFLORES</text>
+        <text class="heat-label" x="440" y="318">SURCO</text>
+        <text class="heat-label" x="240" y="338">BARRANCO</text>
+        <text class="heat-label" x="488" y="330">LA MOLINA</text>
+        <text class="heat-label" x="248" y="398">CHORRILLOS</text>
+
+        <!-- Ocean label -->
+        <text x="72" y="270" text-anchor="middle" font-size="9" fill="#4a90c0" font-family="Arial" font-weight="700" opacity=".7" transform="rotate(-85,72,270)">OCÉANO PACÍFICO</text>
+
+        <!-- Compass -->
+        <g transform="translate(548,35)">
+          <circle r="18" fill="rgba(255,255,255,.85)" stroke="#cddeca" stroke-width="1"/>
+          <text x="0" y="-5" text-anchor="middle" font-size="8" fill="#1a9e5c" font-weight="700" font-family="Arial">N</text>
+          <path d="M0,-13 L2.5,-4 L0,-2 L-2.5,-4 Z" fill="#1a9e5c"/>
+          <path d="M0,2 L2.5,10 L0,13 L-2.5,10 Z" fill="#888"/>
+          <text x="0" y="22" text-anchor="middle" font-size="6" fill="#888" font-family="Arial">S</text>
+        </g>
+      </svg>
+
+      <!-- Legend -->
+      <div class="heat-legend">
+        <span>Menos rescates</span>
+        <div class="heat-legend-grad"></div>
+        <span>Más rescates</span>
+      </div>
+      <div style="text-align:center;margin-top:.8rem;">
+        <span style="font-size:.78rem;color:var(--text-muted);">Haz hover sobre un distrito para ver detalles</span>
+      </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="heat-sidebar">
+
+      <!-- Top districts -->
+      <div class="district-rank-card">
+        <div class="district-rank-title">🏆 Top distritos por rescates</div>
+        <div id="district-ranking"></div>
+      </div>
+
+      <!-- Bar chart -->
+      <div class="chart-wrap-heat">
+        <div style="font-family:var(--font-display);font-weight:800;font-size:.9rem;margin-bottom:1rem;">📊 Distribución de rescates</div>
+        <canvas id="heat-chart" height="220"></canvas>
+      </div>
+
+      <!-- Quick stats -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.8rem;">
+        <div style="background:var(--primary-light);border-radius:var(--radius-md);padding:1rem;text-align:center;">
+          <div style="font-family:var(--font-display);font-size:1.5rem;font-weight:900;color:var(--primary-dark);" id="heat-total-rescued">0</div>
+          <div style="font-size:.72rem;color:var(--text-muted);">Total rescatados</div>
+        </div>
+        <div style="background:var(--accent-light);border-radius:var(--radius-md);padding:1rem;text-align:center;">
+          <div style="font-family:var(--font-display);font-size:1.5rem;font-weight:900;color:#8a6000;" id="heat-top-district">–</div>
+          <div style="font-size:.72rem;color:var(--text-muted);">Distrito líder</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="js/navbar.js"></script>
+<script src="js/app.js"></script>
+<script src="js/extras.js"></script>
+<script>
+const DISTRICT_IDS = {
+  'Miraflores':  'hd-miraflores',
+  'San Isidro':  'hd-sanisidro',
+  'Surco':       'hd-surco',
+  'San Borja':   'hd-sanborja',
+  'La Molina':   'hd-lamolina',
+  'Barranco':    'hd-barranco',
+  'Lince':       'hd-lince',
+  'Jesús María': 'hd-jesusmaria',
+  'Magdalena':   'hd-magdalena',
+  'San Miguel':  'hd-sanmiguel',
+  'Los Olivos':  'hd-losolivos',
+  'Callao':      'hd-callao',
+  'Chorrillos':  'hd-chorrillos',
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+  const data    = getDistrictActivity();
+  const sorted  = Object.entries(data).sort((a,b) => b[1]-a[1]);
+  const maxVal  = sorted[0]?.[1] || 1;
+  const total   = sorted.reduce((s,[,v]) => s+v, 0);
+  const isDark  = Store.get('rf_theme')==='dark';
+
+  // Color districts by intensity
+  sorted.forEach(([district, count]) => {
+    const id  = DISTRICT_IDS[district];
+    if (!id) return;
+    const el  = document.getElementById(id);
+    if (!el) return;
+    const pct = count / maxVal;
+    // Interpolate from light green to dark green
+    const r = Math.round(209 - pct * (209-13));
+    const g = Math.round(245 - pct * (245-43));
+    const b = Math.round(227 - pct * (227-26));
+    el.style.fill = `rgb(${r},${g},${b})`;
+
+    // Tooltip on hover
+    const tooltip = document.getElementById('heat-tooltip');
+    el.addEventListener('mousemove', e => {
+      if (!tooltip) return;
+      tooltip.style.display = 'block';
+      tooltip.style.left    = (e.clientX + 14) + 'px';
+      tooltip.style.top     = (e.clientY - 10) + 'px';
+      const pctTotal = ((count / total)*100).toFixed(1);
+      tooltip.innerHTML = `<strong>${district}</strong><br>🥗 ${count.toLocaleString('es-PE')} rescates<br>📊 ${pctTotal}% del total`;
+    });
+    el.addEventListener('mouseleave', () => { if (tooltip) tooltip.style.display = 'none'; });
+  });
+
+  // Top districts ranking
+  const rankEl = document.getElementById('district-ranking');
+  if (rankEl) {
+    rankEl.innerHTML = sorted.slice(0,8).map(([district, count], i) => {
+      const barW = Math.round((count / maxVal) * 100);
+      const medals = ['🥇','🥈','🥉'];
+      return `<div class="district-row">
+        <div class="district-rank-num">${i < 3 ? medals[i] : i+1}</div>
+        <div class="district-bar-wrap">
+          <div class="district-name">${escapeHTML(district)}</div>
+          <div style="height:5px;background:var(--border);border-radius:50px;overflow:hidden;">
+            <div style="height:100%;width:${barW}%;background:linear-gradient(90deg,var(--primary-light),var(--primary));border-radius:50px;transition:width 1s ease;"></div>
+          </div>
+        </div>
+        <div class="district-num">${count.toLocaleString('es-PE')}</div>
+      </div>`;
+    }).join('');
+  }
+
+  // Summary stats
+  const totalEl = document.getElementById('heat-total-rescued');
+  const topEl   = document.getElementById('heat-top-district');
+  const labelEl = document.getElementById('heat-total-label');
+  if (totalEl) totalEl.textContent = total.toLocaleString('es-PE');
+  if (topEl)   topEl.textContent   = sorted[0]?.[0] || '–';
+  if (labelEl) labelEl.textContent = `${total.toLocaleString('es-PE')} rescates totales`;
+
+  // Chart.js bar chart
+  const tc = isDark ? '#7aaa88' : '#5a7060';
+  const gc = isDark ? '#1a2e22' : '#e8f0ec';
+  const ctx = document.getElementById('heat-chart');
+  if (ctx) {
+    new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: sorted.slice(0,8).map(([d]) => d.length > 10 ? d.slice(0,10)+'…' : d),
+        datasets: [{
+          data: sorted.slice(0,8).map(([,v]) => v),
+          backgroundColor: sorted.slice(0,8).map(([,v]) => {
+            const p = v/maxVal;
+            return `rgba(26,158,${Math.round(92+p*163)},${0.5+p*0.5})`;
+          }),
+          borderColor: '#1a9e5c', borderWidth:1, borderRadius:5,
+        }]
+      },
+      options: {
+        indexAxis: 'y', responsive:true,
+        plugins: { legend:{display:false}, tooltip:{ callbacks:{ label: ctx => `${ctx.parsed.x.toLocaleString('es-PE')} rescates` } } },
+        scales: {
+          x: { ticks:{color:tc}, grid:{color:gc}, beginAtZero:true },
+          y: { ticks:{color:tc,font:{size:10}}, grid:{display:false} }
+        }
+      }
+    });
+  }
+});
+</script>
+</body>
+</html>

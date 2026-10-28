@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reseñas — REFOOD PERÚ</title>
+  <meta name="theme-color" content="#1a9e5c">
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="css/styles.css">
+  <style>.reviews-hero {
+      background:linear-gradient(135deg,#0d2b1a,#1a4f30);
+      padding:calc(var(--nav-h) + 2.5rem) 2rem 2.5rem; color:#fff;
+    }
+    .reviews-hero-inner { max-width:1280px; margin:0 auto; }
+    .reviews-hero h1 { font-family:var(--font-display); font-size:clamp(1.5rem,3vw,2.2rem); font-weight:900; margin-bottom:.3rem; }
+    .reviews-hero p { color:rgba(255,255,255,.72); font-size:.93rem; }
+
+    .reviews-layout {
+      max-width:1100px; margin:0 auto; padding:2rem 1.5rem 3rem;
+      display:grid; grid-template-columns:340px 1fr; gap:2rem;
+    }
+
+    .write-review-card {
+      background:var(--bg-card); border-radius:var(--radius-lg); padding:1.8rem;
+      border:1px solid var(--border); box-shadow:var(--shadow-sm); height:fit-content;
+      position:sticky; top:calc(var(--nav-h) + 1rem);
+    }
+    .write-review-title { font-family:var(--font-display); font-weight:800; font-size:1.05rem; margin-bottom:1.2rem; }
+
+    .star-select { display:flex; gap:.3rem; font-size:1.8rem; margin-bottom:.8rem; cursor:pointer; }
+    .star-select span { transition:var(--transition); opacity:.3; }
+    .star-select span.lit { opacity:1; }
+    .star-select span:hover ~ span { opacity:.3; }
+    .star-select:hover span { opacity:1; }
+    .star-select span:hover ~ span { opacity:.3 !important; }
+
+    .reviews-list { display:flex; flex-direction:column; gap:1rem; }
+
+    .filter-row { display:flex; gap:.5rem; flex-wrap:wrap; margin-bottom:1.2rem; align-items:center; }
+    .star-filter { padding:.3rem .75rem; border-radius:50px; border:1.5px solid var(--border); background:var(--bg-card); font-size:.82rem; cursor:pointer; transition:var(--transition); }
+    .star-filter:hover,.star-filter.active { border-color:var(--accent); background:var(--accent-light); color:#7a5500; }
+
+    .review-helpful { display:flex; align-items:center; gap:.6rem; margin-top:.6rem; }
+    .helpful-btn { padding:.2rem .65rem; border-radius:50px; border:1px solid var(--border); background:none; font-size:.75rem; cursor:pointer; color:var(--text-muted); transition:var(--transition); }
+    .helpful-btn:hover { border-color:var(--primary); color:var(--primary); }
+    .helpful-btn.liked { background:var(--primary-light); color:var(--primary-dark); border-color:var(--primary); }
+
+    .verified-badge { display:inline-flex; align-items:center; gap:.2rem; font-size:.72rem; font-weight:600; color:var(--primary-dark); background:var(--primary-light); padding:.1rem .5rem; border-radius:50px; margin-left:.4rem; }
+
+    @media(max-width:900px){ .reviews-layout{grid-template-columns:1fr;} .write-review-card{position:static;} }
+  </style>
+</head>
+<body>
+
+<!-- Hero -->
+<div class="reviews-hero">
+  <div class="reviews-hero-inner">
+    <h1>⭐ Reseñas de la comunidad</h1>
+    <p>Opiniones reales de usuarios que rescatan alimentos cada día en Lima</p>
+  </div>
+</div>
+
+<div class="reviews-layout">
+
+  <!-- Write review sidebar -->
+  <aside>
+    <!-- Rating summary card -->
+    <div class="rating-summary" style="flex-direction:column;gap:1rem;margin-bottom:1.2rem;">
+      <div style="display:flex;gap:1.5rem;align-items:center;width:100%;">
+        <div style="text-align:center;">
+          <div class="rating-big">4.8</div>
+          <div class="stars-display" style="justify-content:center;margin:.3rem 0;">
+            <span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span>
+          </div>
+          <div style="font-size:.75rem;color:var(--text-muted);" id="total-reviews-count">6 reseñas</div>
+        </div>
+        <div class="rating-bars" style="flex:1;">
+          <div class="rating-bar-row"><span class="rating-bar-label">5★</span><div class="rating-bar-track"><div class="rating-bar-fill" data-width="83" style="width:0%"></div></div><span class="rating-count" id="c5">5</span></div>
+          <div class="rating-bar-row"><span class="rating-bar-label">4★</span><div class="rating-bar-track"><div class="rating-bar-fill" data-width="17" style="width:0%;background:linear-gradient(90deg,var(--primary),#48d888)"></div></div><span class="rating-count" id="c4">1</span></div>
+          <div class="rating-bar-row"><span class="rating-bar-label">3★</span><div class="rating-bar-track"><div class="rating-bar-fill" data-width="0" style="width:0%"></div></div><span class="rating-count" id="c3">0</span></div>
+          <div class="rating-bar-row"><span class="rating-bar-label">2★</span><div class="rating-bar-track"><div class="rating-bar-fill" data-width="0" style="width:0%"></div></div><span class="rating-count" id="c2">0</span></div>
+          <div class="rating-bar-row"><span class="rating-bar-label">1★</span><div class="rating-bar-track"><div class="rating-bar-fill" data-width="0" style="width:0%"></div></div><span class="rating-count" id="c1">0</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Write review form -->
+    <div class="write-review-card">
+      <div class="write-review-title">✏️ Escribe tu reseña</div>
+      <div id="review-form-content">
+        <div style="font-size:.85rem;color:var(--text-muted);margin-bottom:.6rem;">¿Qué tal tu experiencia?</div>
+        <div class="star-select" id="star-select">
+          <span data-val="1">★</span>
+          <span data-val="2">★</span>
+          <span data-val="3">★</span>
+          <span data-val="4">★</span>
+          <span data-val="5">★</span>
+        </div>
+        <div id="rating-label" style="font-size:.82rem;color:var(--text-muted);margin-bottom:.8rem;min-height:1.2em;"></div>
+
+        <div class="form-group">
+          <label class="form-label" for="review-biz">Tienda</label>
+          <select class="form-control" id="review-biz">
+            <option value="">Selecciona la tienda…</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="review-text">Tu comentario</label>
+          <textarea class="form-control" id="review-text" rows="3" placeholder="¿Qué compraste? ¿Cómo fue la experiencia?" style="resize:vertical;"></textarea>
+        </div>
+        <button class="btn btn-primary btn-full" onclick="submitReview()">⭐ Publicar reseña</button>
+        <p style="font-size:.75rem;color:var(--text-muted);margin-top:.6rem;text-align:center;">Solo usuarios registrados pueden reseñar</p>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Reviews list -->
+  <div>
+    <!-- Filter row -->
+    <div class="filter-row">
+      <span style="font-size:.82rem;font-weight:600;color:var(--text-muted);">Filtrar:</span>
+      <button class="star-filter active" data-stars="0" onclick="filterReviews(0,this)">Todas</button>
+      <button class="star-filter" data-stars="5" onclick="filterReviews(5,this)">5★</button>
+      <button class="star-filter" data-stars="4" onclick="filterReviews(4,this)">4★</button>
+      <button class="star-filter" data-stars="3" onclick="filterReviews(3,this)">3★</button>
+    </div>
+    <div class="reviews-list" id="reviews-list"></div>
+  </div>
+
+</div>
+
+<footer class="footer">
+  <div style="max-width:1280px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;">
+    <span style="color:rgba(255,255,255,.6);font-size:.85rem;">© 2024 REFOOD PERÚ</span>
+    <div style="display:flex;gap:1rem;">
+      <a href="index.html" style="color:rgba(255,255,255,.5);font-size:.85rem;">Inicio</a>
+      <a href="ofertas.html" style="color:rgba(255,255,255,.5);font-size:.85rem;">Ofertas</a>
+    </div>
+  </div>
+</footer>
+
+<script src="js/navbar.js"></script>
+<script src="js/app.js"></script>
+<script src="js/extras.js"></script>
+<script>
+  let selectedRating = 0;
+
+  document.addEventListener('DOMContentLoaded', () => {
+    // Populate biz select
+    const businesses = Store.get('rf_businesses_public', []);
+    const sel = document.getElementById('review-biz');
+    if (sel) sel.innerHTML = '<option value="">Selecciona la tienda…</option>' +
+      businesses.map(b => `<option value="${b.id}" data-name="${escapeHTML(b.name)}">${escapeHTML(b.name)} — ${escapeHTML(b.district||'')}</option>`).join('');
+
+    // Star selector
+    const stars = document.querySelectorAll('#star-select span');
+    stars.forEach((s, i) => {
+      s.addEventListener('mouseenter', () => lightStars(i + 1));
+      s.addEventListener('mouseleave', () => lightStars(selectedRating));
+      s.addEventListener('click', () => {
+        selectedRating = i + 1;
+        lightStars(selectedRating);
+        const labels = ['','Muy malo 😞','Malo 😕','Regular 😐','Bueno 😊','Excelente 🌟'];
+        const lbl = document.getElementById('rating-label');
+        if (lbl) lbl.textContent = labels[selectedRating] || '';
+      });
+    });
+
+    renderReviews(0);
+  });
+
+  function lightStars(n) {
+    document.querySelectorAll('#star-select span').forEach((s, i) => s.classList.toggle('lit', i < n));
+  }
+
+  function renderReviews(filterStars) {
+    const list = document.getElementById('reviews-list');
+    if (!list) return;
+    let reviews = Store.get('rf_reviews', []);
+    if (filterStars > 0) reviews = reviews.filter(r => r.rating === filterStars);
+
+    if (!reviews.length) {
+      list.innerHTML = `<div style="text-align:center;padding:3rem;color:var(--text-muted);">
+        <div style="font-size:2.5rem;margin-bottom:.8rem;">⭐</div>
+        <p>No hay reseñas con ese filtro</p>
+      </div>`; return;
+    }
+
+    list.innerHTML = reviews.slice().reverse().map((r, idx) => `
+      <div class="review-card fade-in">
+        <div class="review-header">
+          <div>
+            <div style="display:flex;align-items:center;gap:.4rem;">
+              <div class="reviewer-name">${escapeHTML(r.userName)}</div>
+              <span class="verified-badge">✓ Verificado</span>
+            </div>
+            <div class="stars-display" style="margin:.2rem 0;">${renderStars(r.rating)}</div>
+          </div>
+          <div class="review-date">${r.date}</div>
+        </div>
+        <p class="review-text">"${escapeHTML(r.text)}"</p>
+        <div class="review-business">📍 ${escapeHTML(r.bizName)}</div>
+        <div class="review-helpful">
+          <span style="font-size:.75rem;color:var(--text-muted);">¿Fue útil?</span>
+          <button class="helpful-btn" onclick="markHelpful(this)">👍 Sí (${Math.floor(Math.random()*8)+1})</button>
+          <button class="helpful-btn" onclick="markHelpful(this)">👎 No</button>
+        </div>
+      </div>`).join('');
+
+    // Update counts
+    const all = Store.get('rf_reviews', []);
+    const countEl = document.getElementById('total-reviews-count');
+    if (countEl) countEl.textContent = `${all.length} reseña${all.length !== 1 ? 's' : ''}`;
+  }
+
+  function filterReviews(stars, btn) {
+    document.querySelectorAll('.star-filter').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderReviews(stars);
+  }
+
+  function submitReview() {
+    const user    = Auth.getUser();
+    const bizSel  = document.getElementById('review-biz');
+    const textEl  = document.getElementById('review-text');
+
+    if (!user)              { showToast('Inicia sesión para reseñar', 'warning'); return; }
+    if (!selectedRating)    { showToast('Selecciona una calificación', 'warning'); return; }
+    if (!bizSel?.value)     { showToast('Selecciona una tienda', 'warning'); return; }
+    if (!textEl?.value.trim()) { showToast('Escribe un comentario', 'warning'); return; }
+
+    const bizName = bizSel.options[bizSel.selectedIndex]?.dataset.name || bizSel.value;
+    const review  = {
+      id:       generateId(),
+      userId:   user.id,
+      userName: user.name,
+      bizId:    bizSel.value,
+      bizName,
+      rating:   selectedRating,
+      text:     textEl.value.trim(),
+      date:     new Date().toLocaleDateString('es-PE', { day:'2-digit', month:'short', year:'numeric' }),
+    };
+
+    const reviews = Store.get('rf_reviews', []);
+    reviews.push(review);
+    Store.set('rf_reviews', reviews);
+
+    showToast('¡Reseña publicada! ⭐ Gracias por tu opinión', 'success');
+    textEl.value = ''; selectedRating = 0; lightStars(0);
+    document.getElementById('rating-label').textContent = '';
+    renderReviews(0);
+  }
+
+  function markHelpful(btn) {
+    btn.classList.toggle('liked');
+    showToast(btn.classList.contains('liked') ? 'Marcado como útil 👍' : 'Desmarcado', 'info', 1500);
+  }
+</script>
+</body>
+</html>

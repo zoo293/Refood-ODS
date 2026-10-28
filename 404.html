@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Página no encontrada — REFOOD PERÚ</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <style>.page-404 {
+      min-height:100vh; display:flex; align-items:center; justify-content:center;
+      background: linear-gradient(135deg, var(--bg) 0%, var(--primary-light) 100%);
+      padding: calc(var(--nav-h) + 2rem) 2rem 2rem;
+    }
+    .page-404-inner { max-width:560px; text-align:center; position:relative; }
+
+    .p404-bg-num {
+      font-family:var(--font-display); font-size:min(22vw,200px); font-weight:900;
+      color:var(--primary); opacity:.07; line-height:1;
+      position:absolute; top:50%; left:50%; transform:translate(-50%,-60%);
+      pointer-events:none; user-select:none;
+    }
+    .p404-emoji { font-size:5rem; display:block; margin-bottom:1rem; animation:wobble404 2.5s ease-in-out infinite; }
+    @keyframes wobble404 {
+      0%,100%{transform:rotate(-8deg) scale(1)}
+      50%{transform:rotate(8deg) scale(1.05)}
+    }
+    .p404-title {
+      font-family:var(--font-display); font-size:clamp(1.8rem,4vw,2.6rem);
+      font-weight:900; margin-bottom:.8rem; position:relative;
+    }
+    .p404-desc {
+      font-size:1.05rem; color:var(--text-muted); line-height:1.7;
+      margin-bottom:2rem; position:relative;
+    }
+    .p404-actions { display:flex; gap:1rem; justify-content:center; flex-wrap:wrap; position:relative; }
+
+    .p404-suggestions {
+      margin-top:2.5rem; padding-top:2rem; border-top:1px solid var(--border);
+      position:relative;
+    }
+    .p404-suggestions-title {
+      font-size:.85rem; font-weight:700; text-transform:uppercase;
+      letter-spacing:.08em; color:var(--text-muted); margin-bottom:1rem;
+    }
+    .p404-links { display:flex; gap:.7rem; flex-wrap:wrap; justify-content:center; }
+    .p404-link {
+      padding:.45rem 1rem; border-radius:50px; background:#fff;
+      border:1.5px solid var(--border); font-size:.85rem; font-weight:500;
+      color:var(--text-muted); transition:var(--transition);
+      text-decoration:none;
+    }
+    .p404-link:hover { border-color:var(--primary); color:var(--primary); background:var(--primary-light); }
+
+    /* Floating food particles */
+    .float-particle {
+      position:fixed; font-size:1.5rem; opacity:.12;
+      animation:floatUp 8s ease-in-out infinite; pointer-events:none;
+    }
+    @keyframes floatUp {
+      0%,100%{transform:translateY(0) rotate(0deg); opacity:.12;}
+      50%{transform:translateY(-30px) rotate(10deg); opacity:.2;}
+    }
+  </style>
+</head>
+<body>
+
+<!-- Floating food particles -->
+<div class="float-particle" style="left:5%;top:20%;animation-delay:0s;">🥦</div>
+<div class="float-particle" style="left:88%;top:15%;animation-delay:1.5s;">🍎</div>
+<div class="float-particle" style="left:12%;top:70%;animation-delay:3s;">🥛</div>
+<div class="float-particle" style="left:82%;top:65%;animation-delay:4.5s;">🍞</div>
+<div class="float-particle" style="left:50%;top:5%;animation-delay:2s;">🍌</div>
+<div class="float-particle" style="left:70%;top:85%;animation-delay:6s;">🍊</div>
+
+<nav class="navbar">
+  <div class="nav-container">
+    <a href="index.html" class="nav-logo"><div class="logo-icon">🌿</div>REFOOD <span>PERÚ</span></a>
+    <ul class="nav-links">
+      <li><a href="index.html">Inicio</a></li>
+      <li><a href="ofertas.html">Ofertas</a></li>
+      <li><a href="mapa.html">Mapa</a></li>
+    </ul>
+    <div id="nav-auth-zone" class="nav-actions"></div>
+    <button class="nav-cart-btn" onclick="window.location='carrito.html'" style="position:relative">🛒<span class="cart-badge" id="cart-badge"></span></button>
+    <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" title="Cambiar tema">🌙</button>
+    <button class="hamburger" id="hamburger-btn"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+
+<div class="page-404">
+  <div class="page-404-inner">
+    <div class="p404-bg-num">404</div>
+
+    <span class="p404-emoji">🥗</span>
+
+    <h1 class="p404-title">¡Esta página se perdió!</h1>
+    <p class="p404-desc">
+      Parece que la página que buscas no existe o fue movida.<br>
+      Pero tranquilo/a — <strong>nuestras ofertas sí existen</strong> y están listas para ti.
+    </p>
+
+    <div class="p404-actions">
+      <a href="index.html" class="btn btn-primary btn-lg">🏠 Ir al inicio</a>
+      <a href="ofertas.html" class="btn btn-secondary btn-lg">🛍️ Ver ofertas</a>
+    </div>
+
+    <div class="p404-suggestions">
+      <div class="p404-suggestions-title">O visita una de estas páginas</div>
+      <div class="p404-links">
+        <a href="ofertas.html"            class="p404-link">🛍️ Ofertas</a>
+        <a href="mapa.html"               class="p404-link">🗺️ Mapa</a>
+        <a href="carrito.html"            class="p404-link">🛒 Carrito</a>
+        <a href="favoritos.html"          class="p404-link">❤️ Favoritos</a>
+        <a href="impacto-ambiental.html"  class="p404-link">🌱 Impacto</a>
+        <a href="perfil.html"             class="p404-link">👤 Mi perfil</a>
+        <a href="login-negocio.html"      class="p404-link">🏪 Panel negocio</a>
+      </div>
+    </div>
+
+    <!-- Fun fact -->
+    <div style="margin-top:2rem;padding:1rem 1.5rem;background:var(--primary-light);border-radius:var(--radius-md);font-size:.88rem;color:var(--primary-dark);">
+      💡 <strong>¿Sabías que</strong> en Perú se desperdician <strong>8 millones de toneladas</strong> de alimentos al año? REFOOD ayuda a cambiar eso.
+    </div>
+  </div>
+</div>
+
+<script src="js/navbar.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

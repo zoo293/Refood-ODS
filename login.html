@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Iniciar Sesión — REFOOD PERÚ</title>
+  <meta name="theme-color" content="#1a9e5c">
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="css/styles.css">
+  <style>
+    .user-dropdown{position:absolute;right:0;top:calc(100% + .5rem);background:#fff;border:1px solid var(--border);border-radius:var(--radius-md);box-shadow:var(--shadow-md);min-width:190px;z-index:100;overflow:hidden;}
+    .user-dropdown a{display:block;padding:.7rem 1rem;font-size:.9rem;color:var(--text-main);transition:var(--transition);}
+    .user-dropdown a:hover{background:var(--primary-light);color:var(--primary);}
+    .user-dropdown hr{border:none;border-top:1px solid var(--border);}
+    #nav-auth-zone{position:relative;display:flex;align-items:center;gap:.6rem;}
+    .auth-page-bg {
+      min-height:100vh; padding-top:var(--nav-h);
+      background: linear-gradient(135deg,#f7fbf9 0%,#d1f5e3 100%);
+      display:flex; align-items:center; justify-content:center;
+      padding: calc(var(--nav-h) + 2rem) 1.5rem 2rem;
+    }
+    .social-btn {
+      width:100%; padding:.7rem; border-radius:var(--radius-sm);
+      border:1.5px solid var(--border); background:#fff;
+      display:flex; align-items:center; justify-content:center; gap:.6rem;
+      font-size:.9rem; font-weight:500; cursor:pointer; transition:var(--transition);
+    }
+    .social-btn:hover { border-color:var(--primary); background:var(--primary-light); }
+    .demo-info {
+      background:var(--accent-light); border:1px solid #f0c040;
+      border-radius:var(--radius-sm); padding:.9rem 1rem; margin-bottom:1.2rem;
+      font-size:.83rem; color:#7a5500;
+    }
+  </style>
+</head>
+<body>
+
+<div class="auth-page-bg">
+  <div class="auth-card fade-in">
+    <div class="auth-logo">
+      <div class="logo-big">🌿</div>
+      <h1 class="auth-title">Bienvenido de vuelta</h1>
+      <p class="auth-subtitle">Ingresa a tu cuenta y sigue rescatando alimentos</p>
+    </div>
+
+    <div class="demo-info">
+      💡 <strong>Demo:</strong> Registra una cuenta nueva o usa el botón de acceso rápido abajo.
+    </div>
+
+    <form id="form-login" novalidate>
+      <div class="form-group">
+        <label class="form-label" for="login-email">Correo electrónico</label>
+        <div class="input-icon-wrap">
+          <span class="input-icon">📧</span>
+          <input class="form-control" type="email" id="login-email" placeholder="tu@correo.com" autocomplete="email">
+        </div>
+        <span class="form-error"></span>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="login-password">Contraseña</label>
+        <div class="input-icon-wrap">
+          <span class="input-icon">🔒</span>
+          <input class="form-control" type="password" id="login-password" placeholder="Tu contraseña" autocomplete="current-password">
+          <span class="input-icon toggle-pass" id="toggle-login-pass">👁️</span>
+        </div>
+        <span class="form-error"></span>
+      </div>
+
+      <div style="display:flex;justify-content:flex-end;margin-bottom:1rem;">
+        <a href="#" style="font-size:.85rem;color:var(--primary);font-weight:500;">¿Olvidaste tu contraseña?</a>
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-full btn-lg">
+        🚀 Ingresar a mi cuenta
+      </button>
+    </form>
+
+    <div class="auth-divider"><span>o acceso rápido para demo</span></div>
+
+    <button class="social-btn" onclick="quickDemo()">
+      ⚡ Entrar como usuario demo
+    </button>
+
+    <div class="auth-switch mt-2">
+      ¿No tienes cuenta? <a href="registro.html">Regístrate gratis</a>
+    </div>
+    <div class="auth-switch mt-1" style="font-size:.82rem;">
+      ¿Eres negocio? <a href="login-negocio.html">Ingresar como negocio</a>
+    </div>
+  </div>
+</div>
+
+<script src="js/navbar.js"></script>
+<script src="js/app.js"></script>
+<script src="js/auth.js"></script>
+<script>
+  function quickDemo() {
+    // Create demo user if not exists
+    const users = Store.get('rf_users', []);
+    const demoEmail = 'demo@refood.pe';
+    let demo = users.find(u => u.email === demoEmail);
+    if (!demo) {
+      demo = { id: generateId(), name: 'Usuario Demo', email: demoEmail, phone: '987654321', password: btoa('demo123'), createdAt: new Date().toISOString(), address: 'Av. Ejemplo 123', district: 'Miraflores' };
+      users.push(demo);
+      Store.set('rf_users', users);
+    }
+    Store.set('rf_current_user', { id: demo.id, name: demo.name, email: demo.email, phone: demo.phone, address: demo.address||'', district: demo.district||'' });
+    showToast('¡Bienvenido, Usuario Demo! 👋', 'success');
+    setTimeout(() => window.location.href = 'ofertas.html', 900);
+  }
+
+  // Redirect if already logged in
+  document.addEventListener('DOMContentLoaded', () => {
+    if (Auth.isUser()) window.location.href = 'ofertas.html';
+  });
+</script>
+</body>
+</html>

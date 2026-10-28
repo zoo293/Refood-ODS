@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ranking de Rescatadores — REFOOD PERÚ</title>
+  <meta name="theme-color" content="#1a9e5c">
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="css/styles.css">
+  <style>
+    .ranking-hero {
+      background:linear-gradient(135deg,#0d2b1a,#1a4f30,#1a9e5c);
+      padding:calc(var(--nav-h) + 3rem) 2rem 3.5rem; text-align:center; color:#fff; position:relative; overflow:hidden;
+    }
+    .ranking-hero::before { content:'🏆'; position:absolute; font-size:18rem; opacity:.04; top:50%; left:50%; transform:translate(-50%,-50%); pointer-events:none; }
+    .ranking-hero h1 { font-family:var(--font-display); font-size:clamp(2rem,4vw,3rem); font-weight:900; margin-bottom:.5rem; }
+    .ranking-hero p  { color:rgba(255,255,255,.75); font-size:1rem; max-width:500px; margin:0 auto; }
+
+    .ranking-body { max-width:900px; margin:0 auto; padding:2rem 1.5rem 4rem; }
+
+    /* Tabs */
+    .rank-tabs { display:flex; gap:.5rem; margin-bottom:2rem; border-bottom:2px solid var(--border); padding-bottom:0; }
+    .rank-tab {
+      padding:.65rem 1.2rem; border-radius:var(--radius-sm) var(--radius-sm) 0 0;
+      font-weight:600; font-size:.88rem; cursor:pointer; transition:var(--transition);
+      color:var(--text-muted); border:none; background:none; border-bottom:3px solid transparent; margin-bottom:-2px;
+    }
+    .rank-tab.active { color:var(--primary-dark); border-bottom-color:var(--primary); background:var(--primary-light); }
+    .rank-tab:hover:not(.active) { color:var(--primary); background:var(--bg); }
+
+    /* Podium */
+    .podium { display:flex; align-items:flex-end; justify-content:center; gap:1rem; margin-bottom:2.5rem; }
+    .podium-place {
+      flex:1; max-width:200px; text-align:center; border-radius:var(--radius-lg) var(--radius-lg) 0 0;
+      padding:1.5rem 1rem 1rem; position:relative; transition:var(--transition);
+    }
+    .podium-place:hover { transform:translateY(-4px); }
+    .podium-1 { background:linear-gradient(135deg,#f0a500,#f7c04a); height:200px; order:2; box-shadow:0 8px 24px rgba(240,165,0,.3); }
+    .podium-2 { background:linear-gradient(135deg,#aaa,#ccc); height:160px; order:1; box-shadow:0 6px 20px rgba(0,0,0,.15); }
+    .podium-3 { background:linear-gradient(135deg,#cd7f32,#e8a060); height:130px; order:3; box-shadow:0 6px 16px rgba(205,127,50,.25); }
+    .podium-crown { font-size:2rem; display:block; margin-bottom:.3rem; }
+    .podium-avatar {
+      width:56px; height:56px; border-radius:50%; margin:0 auto .5rem;
+      display:flex; align-items:center; justify-content:center;
+      font-size:1.6rem; background:rgba(255,255,255,.35); border:3px solid rgba(255,255,255,.6);
+    }
+    .podium-name { font-family:var(--font-display); font-weight:800; font-size:.9rem; color:#fff; text-shadow:0 1px 3px rgba(0,0,0,.3); }
+    .podium-score { font-size:.78rem; color:rgba(255,255,255,.85); margin-top:.2rem; }
+    .podium-num { position:absolute; bottom:.6rem; left:50%; transform:translateX(-50%); font-family:var(--font-display); font-size:2.5rem; font-weight:900; color:rgba(255,255,255,.25); }
+
+    /* Leaderboard table */
+    .leaderboard { background:var(--bg-card); border-radius:var(--radius-lg); border:1px solid var(--border); box-shadow:var(--shadow-sm); overflow:hidden; }
+    .lb-header { display:grid; grid-template-columns:50px 1fr 100px 100px 80px; gap:.5rem; padding:.7rem 1.2rem; background:var(--primary-dark); color:#fff; font-size:.8rem; font-weight:700; text-transform:uppercase; letter-spacing:.05em; }
+    .lb-row {
+      display:grid; grid-template-columns:50px 1fr 100px 100px 80px; gap:.5rem;
+      padding:.85rem 1.2rem; border-bottom:1px solid var(--border);
+      transition:var(--transition); align-items:center;
+    }
+    .lb-row:last-child { border-bottom:none; }
+    .lb-row:hover { background:var(--bg); }
+    .lb-row.me { background:var(--primary-light) !important; border-left:3px solid var(--primary); }
+    .lb-rank { font-family:var(--font-display); font-weight:900; font-size:1.1rem; text-align:center; }
+    .lb-rank.gold   { color:#f0a500; }
+    .lb-rank.silver { color:#aaa; }
+    .lb-rank.bronze { color:#cd7f32; }
+    .lb-user { display:flex; align-items:center; gap:.7rem; }
+    .lb-avatar { width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg,var(--primary),var(--accent)); display:flex; align-items:center; justify-content:center; font-size:1.1rem; flex-shrink:0; }
+    .lb-username { font-weight:700; font-size:.88rem; }
+    .lb-badge-mini { font-size:.68rem; font-weight:600; color:var(--primary); background:var(--primary-light); padding:.1rem .4rem; border-radius:50px; }
+    .lb-num { font-family:var(--font-display); font-weight:800; font-size:.95rem; color:var(--primary-dark); text-align:center; }
+    .lb-saved { font-weight:700; color:var(--text-main); font-size:.88rem; text-align:center; }
+    .lb-trend { text-align:center; font-size:.85rem; }
+    .trend-up   { color:var(--primary); }
+    .trend-down { color:var(--danger); }
+    .trend-same { color:var(--text-muted); }
+
+    /* Monthly challenge */
+    .challenge-card {
+      background:linear-gradient(135deg,var(--bg-dark),#1a3020);
+      border-radius:var(--radius-xl); padding:2rem; color:#fff; margin-bottom:2rem;
+      position:relative; overflow:hidden;
+    }
+    .challenge-card::after { content:'🌍'; position:absolute; right:1.5rem; top:50%; transform:translateY(-50%); font-size:5rem; opacity:.12; }
+    .challenge-title { font-family:var(--font-display); font-size:1.3rem; font-weight:900; margin-bottom:.3rem; }
+    .challenge-sub { color:rgba(255,255,255,.65); font-size:.88rem; margin-bottom:1.2rem; }
+    .challenge-progress { background:rgba(255,255,255,.12); border-radius:50px; height:14px; overflow:hidden; margin-bottom:.5rem; }
+    .challenge-bar { height:100%; border-radius:50px; background:linear-gradient(90deg,#48d888,#1a9e5c); transition:width 1.5s ease; }
+    .challenge-meta { display:flex; justify-content:space-between; font-size:.8rem; color:rgba(255,255,255,.6); }
+    .challenge-num { font-family:var(--font-display); font-size:2rem; font-weight:900; color:#48d888; }
+
+    /* My position card */
+    .my-pos-card {
+      background:var(--bg-card); border-radius:var(--radius-lg); padding:1.5rem;
+      border:2px solid var(--primary-light); box-shadow:var(--shadow-md); margin-bottom:1.5rem;
+      display:flex; align-items:center; gap:1.2rem; flex-wrap:wrap;
+    }
+    .my-pos-rank { font-family:var(--font-display); font-size:3rem; font-weight:900; color:var(--primary); line-height:1; }
+    .my-pos-label { font-size:.78rem; color:var(--text-muted); }
+    .my-pos-info { flex:1; }
+    .my-pos-name { font-family:var(--font-display); font-weight:800; font-size:1rem; margin-bottom:.2rem; }
+
+    [data-theme="dark"] .leaderboard,[data-theme="dark"] .my-pos-card { background:var(--bg-card); border-color:var(--border); }
+    [data-theme="dark"] .lb-row:hover { background:#0d1a11; }
+    [data-theme="dark"] .lb-row.me { background:rgba(26,158,92,.15) !important; }
+
+    @media(max-width:640px) {
+      .lb-header,.lb-row { grid-template-columns:40px 1fr 80px 70px; }
+      .lb-header > :last-child,.lb-row > :last-child { display:none; }
+      .podium-place { padding:1rem .6rem .8rem; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="ranking-hero">
+  <div style="position:relative;z-index:1;">
+    <div style="display:inline-flex;align-items:center;gap:.5rem;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:50px;padding:.4rem 1rem;font-size:.82rem;font-weight:600;margin-bottom:1rem;">
+      <span style="width:8px;height:8px;background:#48d888;border-radius:50%;animation:pulse 2s infinite;display:inline-block;"></span>
+      Actualizado en tiempo real
+    </div>
+    <h1>🏆 Ranking de Rescatadores</h1>
+    <p>Los peruanos que más alimentos han rescatado este mes en Lima</p>
+  </div>
+</div>
+
+<div class="ranking-body">
+
+  <!-- Monthly Challenge -->
+  <div class="challenge-card" id="challenge-card">
+    <div class="challenge-title">🌍 Reto del mes: <span id="challenge-month">Diciembre 2024</span></div>
+    <div class="challenge-sub">Entre todos los usuarios de Lima, rescatemos <strong>10,000 productos</strong> este mes</div>
+    <div style="display:flex;align-items:baseline;gap:.5rem;margin-bottom:.8rem;">
+      <span class="challenge-num" id="challenge-rescued">0</span>
+      <span style="color:rgba(255,255,255,.55);font-size:.88rem;">/ 10,000 productos rescatados</span>
+    </div>
+    <div class="challenge-progress">
+      <div class="challenge-bar" id="challenge-bar" style="width:0%"></div>
+    </div>
+    <div class="challenge-meta">
+      <span id="challenge-pct">0% completado</span>
+      <span id="challenge-days">30 días restantes</span>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="rank-tabs">
+    <button class="rank-tab active" onclick="switchTab('monthly',this)">📅 Este mes</button>
+    <button class="rank-tab" onclick="switchTab('alltime',this)">🏆 Histórico</button>
+    <button class="rank-tab" onclick="switchTab('businesses',this)">🏪 Negocios</button>
+  </div>
+
+  <!-- My position -->
+  <div class="my-pos-card" id="my-pos-card" style="display:none;">
+    <div style="text-align:center;">
+      <div class="my-pos-rank" id="my-rank">–</div>
+      <div class="my-pos-label">Tu posición</div>
+    </div>
+    <div class="my-pos-info">
+      <div class="my-pos-name" id="my-name">–</div>
+      <div style="font-size:.82rem;color:var(--text-muted);" id="my-stats">–</div>
+    </div>
+    <div style="text-align:right;">
+      <div style="font-family:var(--font-display);font-size:1.4rem;font-weight:900;color:var(--primary-dark);" id="my-rescued-num">0</div>
+      <div style="font-size:.75rem;color:var(--text-muted);">productos rescatados</div>
+    </div>
+  </div>
+
+  <!-- Podium (top 3) -->
+  <div class="podium" id="podium"></div>
+
+  <!-- Leaderboard -->
+  <div class="leaderboard">
+    <div class="lb-header">
+      <div style="text-align:center;">#</div>
+      <div>Usuario</div>
+      <div style="text-align:center;">Rescatados</div>
+      <div style="text-align:center;">Ahorrado</div>
+      <div style="text-align:center;">Tendencia</div>
+    </div>
+    <div id="leaderboard-list"></div>
+  </div>
+
+  <!-- Share -->
+  <div style="text-align:center;margin-top:2rem;">
+    <p style="color:var(--text-muted);font-size:.9rem;margin-bottom:1rem;">¿Quieres aparecer en el ranking? ¡Haz tu primera reserva!</p>
+    <a href="ofertas.html" class="btn btn-primary">🛍️ Ver ofertas y rescatar</a>
+    <button class="btn btn-secondary" onclick="shareRanking()" style="margin-left:.8rem;">📱 Compartir ranking</button>
+  </div>
+</div>
+
+<script src="js/navbar.js"></script>
+<script src="js/app.js"></script>
+<script src="js/extras.js"></script>
+<script>
+// Datos demo del leaderboard (simulados + usuarios reales)
+const DEMO_USERS = [
+  { id:'demo1', name:'María Castillo',  avatar:'🌿', rescued:142, saved:486.50, badge:'🏆 Héroe',    trend:+5  },
+  { id:'demo2', name:'Jorge Ramírez',   avatar:'🥗', rescued:118, saved:392.00, badge:'🌳 Experto',  trend:+2  },
+  { id:'demo3', name:'Ana García',      avatar:'🍎', rescued: 95, saved:318.70, badge:'🌿 Activo',   trend:-1  },
+  { id:'demo4', name:'Luis Paredes',    avatar:'🥦', rescued: 87, saved:290.00, badge:'🌿 Activo',   trend:+3  },
+  { id:'demo5', name:'Sofía Torres',    avatar:'🌱', rescued: 76, saved:248.50, badge:'🍃 Verde',    trend:0   },
+  { id:'demo6', name:'Carlos Mendoza',  avatar:'🫐', rescued: 68, saved:215.00, badge:'🍃 Verde',    trend:-2  },
+  { id:'demo7', name:'Patricia Vega',   avatar:'🌻', rescued: 54, saved:178.00, badge:'🍃 Verde',    trend:+1  },
+  { id:'demo8', name:'Roberto Silva',   avatar:'🥕', rescued: 41, saved:134.50, badge:'🌱 Novato',   trend:0   },
+  { id:'demo9', name:'Valentina Ríos',  avatar:'🏆', rescued: 33, saved:112.00, badge:'🌱 Novato',   trend:+4  },
+  { id:'demo10',name:'Diego Flores',    avatar:'⭐', rescued: 22, saved: 74.00, badge:'🌱 Novato',   trend:-1  },
+];
+
+const BIZ_DEMO = [
+  { name:'Panadería La Ideal',    logo:'🥐', rescued:312, saved:2840, district:'Barranco'  },
+  { name:'Plaza Vea San Isidro',  logo:'🏪', rescued:289, saved:2620, district:'San Isidro'},
+  { name:'Wong La Molina',        logo:'🛍️', rescued:247, saved:2180, district:'La Molina' },
+  { name:'Starbucks Miraflores',  logo:'☕', rescued:198, saved:1760, district:'Miraflores'},
+  { name:'La Lucha Sanguchería',  logo:'🥪', rescued:176, saved:1540, district:'Miraflores'},
+  { name:'Tottus Miraflores',     logo:'🛒', rescued:163, saved:1420, district:'Miraflores'},
+  { name:'Panadería Alemana',     logo:'🍞', rescued:145, saved:1280, district:'San Isidro'},
+  { name:'Metro Surco',           logo:'🏬', rescued:134, saved:1180, district:'Surco'     },
+];
+
+let currentTab = 'monthly';
+
+document.addEventListener('DOMContentLoaded', () => {
+  loadChallenge();
+  loadMyPosition();
+  renderLeaderboard('monthly');
+});
+
+function loadChallenge() {
+  const ch = getMonthlyChallenge();
+  const el = document.getElementById('challenge-rescued');
+  const bar= document.getElementById('challenge-bar');
+  const pct= document.getElementById('challenge-pct');
+  const dys= document.getElementById('challenge-days');
+  const mon= document.getElementById('challenge-month');
+  if (el)  el.textContent  = ch.rescued.toLocaleString('es-PE');
+  if (pct) pct.textContent = `${ch.progress.toFixed(1)}% completado`;
+  if (dys) dys.textContent = `${ch.daysLeft} día${ch.daysLeft!==1?'s':''} restante${ch.daysLeft!==1?'s':''}`;
+  if (mon) mon.textContent = ch.monthName.charAt(0).toUpperCase() + ch.monthName.slice(1);
+  if (bar) setTimeout(() => bar.style.width = ch.progress + '%', 300);
+}
+
+function loadMyPosition() {
+  const user = Auth.getUser();
+  if (!user) return;
+  const card = document.getElementById('my-pos-card');
+  if (card) card.style.display = 'flex';
+
+  const reservations = Store.get('rf_reservations',[]).filter(r=>r.userId===user.id);
+  const rescued = reservations.reduce((s,r)=>s+(r.items||[]).reduce((ss,i)=>ss+(i.qty||1),0),0);
+  const savings = getUserSavings(user.id);
+
+  // Find position vs demo users
+  const allUsers = [...DEMO_USERS, { id:user.id, name:user.name, rescued, saved:savings.totalSaved }].sort((a,b)=>b.rescued-a.rescued);
+  const pos = allUsers.findIndex(u=>u.id===user.id) + 1;
+
+  document.getElementById('my-rank').textContent    = `#${pos}`;
+  document.getElementById('my-name').textContent    = user.name;
+  document.getElementById('my-rescued-num').textContent = rescued;
+  document.getElementById('my-stats').textContent   = `${rescued} rescatados · ${formatCurrency(savings.totalSaved)} ahorrados`;
+}
+
+function renderLeaderboard(tab) {
+  const podium  = document.getElementById('podium');
+  const list    = document.getElementById('leaderboard-list');
+  const user    = Auth.getUser();
+
+  let data = [];
+
+  if (tab === 'businesses') {
+    data = BIZ_DEMO;
+    if (podium) podium.style.display = 'none';
+    if (list) {
+      list.innerHTML = data.map((b,i) => `
+        <div class="lb-row">
+          <div class="lb-rank ${i===0?'gold':i===1?'silver':i===2?'bronze':''}">${i<3?['🥇','🥈','🥉'][i]:i+1}</div>
+          <div class="lb-user">
+            <div class="lb-avatar" style="font-size:1.3rem;">${b.logo}</div>
+            <div>
+              <div class="lb-username">${escapeHTML(b.name)}</div>
+              <div class="lb-badge-mini">📍 ${escapeHTML(b.district)}</div>
+            </div>
+          </div>
+          <div class="lb-num">${b.rescued}</div>
+          <div class="lb-saved">${formatCurrency(b.saved)}</div>
+          <div class="lb-trend"><span class="trend-up">🟢 Activo</span></div>
+        </div>`).join('');
+    }
+    return;
+  }
+
+  // Build combined list with real user
+  const reservations = Store.get('rf_reservations',[]);
+  const users = Store.get('rf_users',[]);
+  const realEntries = users.map(u => {
+    const res   = reservations.filter(r=>r.userId===u.id);
+    const rescued=res.reduce((s,r)=>s+(r.items||[]).reduce((ss,i)=>ss+(i.qty||1),0),0);
+    const sv    = getUserSavings(u.id);
+    return { id:u.id, name:u.name, avatar:u.avatar||'🌱', rescued, saved:sv.totalSaved, real:true };
+  }).filter(e=>e.rescued>0);
+
+  data = [...DEMO_USERS, ...realEntries].sort((a,b)=>b.rescued-a.rescued);
+
+  // Podium (top 3)
+  if (podium && data.length >= 3) {
+    podium.style.display = 'flex';
+    const medals = [
+      {place:1, cls:'podium-1', crown:'👑', d:data[0]},
+      {place:2, cls:'podium-2', crown:'🥈', d:data[1]},
+      {place:3, cls:'podium-3', crown:'🥉', d:data[2]},
+    ];
+    podium.innerHTML = medals.map(m=>`
+      <div class="podium-place ${m.cls}">
+        <span class="podium-crown">${m.crown}</span>
+        <div class="podium-avatar">${m.d.avatar}</div>
+        <div class="podium-name">${escapeHTML(m.d.name.split(' ')[0])}</div>
+        <div class="podium-score">${m.d.rescued} rescatados</div>
+        <div class="podium-num">${m.place}</div>
+      </div>`).join('');
+  }
+
+  // List (from position 4)
+  if (list) {
+    list.innerHTML = data.map((u,i) => {
+      const isMe  = user && u.id === user.id;
+      const rank  = i+1;
+      const trend = u.trend ?? 0;
+      const trendHtml = trend > 0 ? `<span class="trend-up">↑${trend}</span>` : trend < 0 ? `<span class="trend-down">↓${Math.abs(trend)}</span>` : `<span class="trend-same">—</span>`;
+      const badge = ALL_BADGES ? ALL_BADGES.slice().reverse().find(b => {
+        if(b.id==='hero50'  && u.rescued>=50) return true;
+        if(b.id==='expert30'&& u.rescued>=30) return true;
+        if(b.id==='active15'&& u.rescued>=15) return true;
+        if(b.id==='green5'  && u.rescued>=5)  return true;
+        return false;
+      }) : null;
+      return `<div class="lb-row${isMe?' me':''}">
+        <div class="lb-rank ${rank===1?'gold':rank===2?'silver':rank===3?'bronze':''}">${rank<=3?['🥇','🥈','🥉'][rank-1]:rank}</div>
+        <div class="lb-user">
+          <div class="lb-avatar">${u.avatar||'🌱'}</div>
+          <div>
+            <div class="lb-username">${escapeHTML(u.name)}${isMe?' <span style="font-size:.7rem;background:var(--primary);color:#fff;padding:.1rem .4rem;border-radius:50px;margin-left:.3rem;">TÚ</span>':''}</div>
+            ${badge?`<div class="lb-badge-mini">${badge.icon} ${badge.name}</div>`:''}
+          </div>
+        </div>
+        <div class="lb-num">${u.rescued}</div>
+        <div class="lb-saved">${formatCurrency(u.saved||0)}</div>
+        <div class="lb-trend">${trendHtml}</div>
+      </div>`;
+    }).join('');
+  }
+}
+
+function switchTab(tab, btn) {
+  currentTab = tab;
+  document.querySelectorAll('.rank-tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderLeaderboard(tab);
+}
+
+function shareRanking() {
+  const text = `🏆 ¡Mira el ranking de rescatadores de REFOOD PERÚ!\n\n` +
+               `🌿 Únete y rescata alimentos en Lima con hasta 70% de descuento.\n` +
+               `👉 https://refoodperu.pe/ranking.html`;
+  window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+}
+</script>
+</body>
+</html>

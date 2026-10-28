@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Blog — REFOOD PERÚ</title>
+  <meta name="theme-color" content="#1a9e5c">
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="css/styles.css">
+  <style>
+    .blog-hero {
+      background:linear-gradient(135deg,#0d2b1a,#1a4f30);
+      padding:calc(var(--nav-h) + 2.5rem) 2rem 3rem; color:#fff;
+    }
+    .blog-hero-inner { max-width:1280px; margin:0 auto; }
+    .blog-hero h1 { font-family:var(--font-display); font-size:clamp(1.8rem,3.5vw,2.8rem); font-weight:900; margin-bottom:.5rem; }
+    .blog-hero p  { color:rgba(255,255,255,.72); font-size:.95rem; max-width:520px; }
+
+    .blog-body { max-width:1280px; margin:0 auto; padding:2rem 1.5rem 4rem; }
+    .blog-layout { display:grid; grid-template-columns:1fr 320px; gap:2rem; }
+
+    /* Featured post */
+    .post-featured {
+      background:var(--bg-card); border-radius:var(--radius-xl); overflow:hidden;
+      border:1px solid var(--border); box-shadow:var(--shadow-md);
+      margin-bottom:2rem; transition:var(--transition);
+    }
+    .post-featured:hover { box-shadow:var(--shadow-lg); transform:translateY(-3px); }
+    .post-featured-img {
+      height:280px; background:linear-gradient(135deg,var(--primary-dark),var(--primary));
+      display:flex; align-items:center; justify-content:center; font-size:6rem; position:relative;
+    }
+    .post-featured-tag {
+      position:absolute; top:1rem; left:1rem; background:var(--accent); color:var(--bg-dark);
+      padding:.3rem .8rem; border-radius:50px; font-size:.78rem; font-weight:700;
+    }
+    .post-featured-body { padding:1.8rem; }
+    .post-meta { display:flex; gap:1rem; font-size:.78rem; color:var(--text-muted); margin-bottom:.8rem; align-items:center; flex-wrap:wrap; }
+    .post-meta .dot { width:4px; height:4px; border-radius:50%; background:var(--text-light); }
+    .post-title { font-family:var(--font-display); font-size:1.5rem; font-weight:900; margin-bottom:.7rem; line-height:1.3; }
+    .post-excerpt { color:var(--text-muted); line-height:1.7; font-size:.93rem; margin-bottom:1.2rem; }
+    .post-tags { display:flex; gap:.5rem; flex-wrap:wrap; }
+    .post-tag { padding:.2rem .7rem; border-radius:50px; background:var(--primary-light); color:var(--primary-dark); font-size:.75rem; font-weight:600; }
+
+    /* Post grid */
+    .posts-grid { display:grid; grid-template-columns:1fr 1fr; gap:1.2rem; }
+    .post-card {
+      background:var(--bg-card); border-radius:var(--radius-lg); overflow:hidden;
+      border:1px solid var(--border); box-shadow:var(--shadow-sm);
+      transition:var(--transition); cursor:pointer;
+    }
+    .post-card:hover { transform:translateY(-4px); box-shadow:var(--shadow-md); border-color:var(--primary-light); }
+    .post-card-img {
+      height:140px; background:linear-gradient(135deg,var(--primary-dark),var(--primary));
+      display:flex; align-items:center; justify-content:center; font-size:3.5rem; position:relative;
+    }
+    .post-card-body { padding:1rem 1.1rem; }
+    .post-card-category { font-size:.72rem; font-weight:700; color:var(--primary); text-transform:uppercase; letter-spacing:.06em; margin-bottom:.4rem; }
+    .post-card-title { font-family:var(--font-display); font-weight:800; font-size:.92rem; line-height:1.35; margin-bottom:.5rem; }
+    .post-card-excerpt { font-size:.8rem; color:var(--text-muted); line-height:1.6; margin-bottom:.7rem; }
+    .post-card-meta { font-size:.72rem; color:var(--text-light); display:flex; justify-content:space-between; align-items:center; }
+    .read-time { background:var(--bg); padding:.15rem .5rem; border-radius:50px; font-size:.7rem; }
+
+    /* Sidebar */
+    .blog-sidebar { display:flex; flex-direction:column; gap:1.2rem; }
+    .sidebar-widget {
+      background:var(--bg-card); border-radius:var(--radius-lg); padding:1.4rem;
+      border:1px solid var(--border); box-shadow:var(--shadow-sm);
+    }
+    .widget-title { font-family:var(--font-display); font-weight:800; font-size:.95rem; margin-bottom:1rem; padding-bottom:.6rem; border-bottom:2px solid var(--border); }
+    .popular-item { display:flex; gap:.7rem; align-items:flex-start; margin-bottom:.8rem; padding-bottom:.8rem; border-bottom:1px solid var(--border); cursor:pointer; transition:var(--transition); }
+    .popular-item:hover { color:var(--primary); }
+    .popular-item:last-child { margin-bottom:0; border-bottom:none; padding-bottom:0; }
+    .popular-num { font-family:var(--font-display); font-size:1.3rem; font-weight:900; color:var(--primary-light); line-height:1; flex-shrink:0; width:24px; text-align:center; }
+    .popular-title { font-size:.83rem; font-weight:600; line-height:1.4; }
+    .popular-meta  { font-size:.72rem; color:var(--text-muted); margin-top:.15rem; }
+
+    .category-list { display:flex; flex-direction:column; gap:.4rem; }
+    .category-item { display:flex; justify-content:space-between; align-items:center; padding:.4rem .6rem; border-radius:var(--radius-sm); cursor:pointer; transition:var(--transition); font-size:.85rem; }
+    .category-item:hover { background:var(--primary-light); color:var(--primary-dark); }
+    .category-count { background:var(--bg); padding:.1rem .5rem; border-radius:50px; font-size:.72rem; font-weight:600; color:var(--text-muted); }
+
+    .newsletter-widget { background:linear-gradient(135deg,var(--primary-dark),var(--primary)); color:#fff; }
+    .newsletter-widget .widget-title { color:#fff; border-bottom-color:rgba(255,255,255,.2); }
+    .newsletter-desc { font-size:.83rem; color:rgba(255,255,255,.8); margin-bottom:1rem; line-height:1.6; }
+    .newsletter-input { display:flex; gap:.5rem; }
+    .newsletter-input input { flex:1; padding:.55rem .8rem; border-radius:var(--radius-sm); border:none; font-size:.85rem; outline:none; }
+    .newsletter-input button { padding:.55rem .9rem; border-radius:var(--radius-sm); background:var(--accent); color:var(--bg-dark); font-weight:700; font-size:.82rem; border:none; cursor:pointer; white-space:nowrap; transition:var(--transition); }
+    .newsletter-input button:hover { background:#d4900a; }
+
+    /* Article modal */
+    .article-modal-body { max-height:70vh; overflow-y:auto; padding-right:.5rem; }
+    .article-content { font-size:.93rem; line-height:1.8; color:var(--text-main); }
+    .article-content h2 { font-family:var(--font-display); font-weight:800; font-size:1.15rem; color:var(--primary-dark); margin:1.5rem 0 .6rem; }
+    .article-content p  { margin-bottom:1rem; }
+    .article-content ul { padding-left:1.5rem; margin-bottom:1rem; }
+    .article-content li { margin-bottom:.4rem; }
+    .article-content .highlight { background:var(--primary-light); border-left:4px solid var(--primary); padding:.8rem 1rem; border-radius:0 var(--radius-sm) var(--radius-sm) 0; margin:1rem 0; }
+
+    [data-theme="dark"] .post-featured,[data-theme="dark"] .post-card,[data-theme="dark"] .sidebar-widget { background:var(--bg-card); border-color:var(--border); }
+
+    @media(max-width:1024px) { .blog-layout{grid-template-columns:1fr;} .blog-sidebar{order:-1;} }
+    @media(max-width:640px) { .posts-grid{grid-template-columns:1fr;} }
+  </style>
+</head>
+<body>
+
+<div class="blog-hero">
+  <div class="blog-hero-inner">
+    <h1>📰 Blog REFOOD PERÚ</h1>
+    <p>Recetas con alimentos rescatados, consejos de sostenibilidad y noticias del mundo alimentario</p>
+  </div>
+</div>
+
+<div class="blog-body">
+  <div class="blog-layout">
+
+    <!-- Main content -->
+    <div>
+      <!-- Featured post -->
+      <div class="post-featured" onclick="openArticle(0)">
+        <div class="post-featured-img">
+          🌿
+          <div class="post-featured-tag">⭐ Destacado</div>
+        </div>
+        <div class="post-featured-body">
+          <div class="post-meta">
+            <span>📅 15 Dic 2024</span>
+            <span class="dot"></span>
+            <span>✍️ REFOOD PERÚ</span>
+            <span class="dot"></span>
+            <span class="read-time">⏱️ 5 min</span>
+          </div>
+          <h2 class="post-title">Cómo Per ú puede eliminar el 30% del desperdicio alimentario con tecnología</h2>
+          <p class="post-excerpt">El desperdicio alimentario es una crisis que costaría S/ 18 mil millones al año al país. Descubre cómo plataformas como REFOOD PERÚ están cambiando las reglas del juego, conectando negocios con consumidores conscientes en tiempo real.</p>
+          <div class="post-tags">
+            <span class="post-tag">Sostenibilidad</span>
+            <span class="post-tag">Tecnología</span>
+            <span class="post-tag">Perú</span>
+            <span class="post-tag">Impacto</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Posts grid -->
+      <h3 style="font-family:var(--font-display);font-weight:800;font-size:1.1rem;margin-bottom:1.2rem;">📚 Últimos artículos</h3>
+      <div class="posts-grid" id="posts-grid"></div>
+
+      <!-- Load more -->
+      <div style="text-align:center;margin-top:2rem;">
+        <button class="btn btn-secondary" id="load-more-btn" onclick="loadMorePosts()">Cargar más artículos</button>
+      </div>
+    </div>
+
+    <!-- Sidebar -->
+    <aside class="blog-sidebar">
+      <!-- Popular -->
+      <div class="sidebar-widget">
+        <div class="widget-title">🔥 Más leídos</div>
+        <div id="popular-list"></div>
+      </div>
+
+      <!-- Categories -->
+      <div class="sidebar-widget">
+        <div class="widget-title">📂 Categorías</div>
+        <div class="category-list">
+          <div class="category-item" onclick="filterPosts('recetas')">🍳 Recetas rescatadas <span class="category-count">8</span></div>
+          <div class="category-item" onclick="filterPosts('sostenibilidad')">🌿 Sostenibilidad <span class="category-count">6</span></div>
+          <div class="category-item" onclick="filterPosts('tips')">💡 Tips de ahorro <span class="category-count">5</span></div>
+          <div class="category-item" onclick="filterPosts('noticias')">📰 Noticias <span class="category-count">4</span></div>
+          <div class="category-item" onclick="filterPosts('negocios')">🏪 Para negocios <span class="category-count">3</span></div>
+          <div class="category-item" onclick="filterPosts('')">🌟 Todas <span class="category-count">26</span></div>
+        </div>
+      </div>
+
+      <!-- Calculator widget -->
+      <div class="sidebar-widget">
+        <div class="widget-title">💰 Calculadora de ahorro</div>
+        <p style="font-size:.82rem;color:var(--text-muted);margin-bottom:1rem;">¿Cuánto ahorrarías usando REFOOD?</p>
+        <div class="form-group">
+          <label class="form-label" style="font-size:.8rem;">Visitas por semana</label>
+          <input type="range" id="calc-visits" min="1" max="7" value="3" style="width:100%;accent-color:var(--primary);" oninput="updateCalc()">
+          <div style="display:flex;justify-content:space-between;font-size:.72rem;color:var(--text-muted);">
+            <span>1</span><span id="calc-visits-val" style="color:var(--primary);font-weight:700;">3 veces</span><span>7</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" style="font-size:.8rem;">Ahorro promedio por visita (S/)</label>
+          <input type="range" id="calc-avg" min="5" max="50" value="20" style="width:100%;accent-color:var(--primary);" oninput="updateCalc()">
+          <div style="display:flex;justify-content:space-between;font-size:.72rem;color:var(--text-muted);">
+            <span>S/ 5</span><span id="calc-avg-val" style="color:var(--primary);font-weight:700;">S/ 20</span><span>S/ 50</span>
+          </div>
+        </div>
+        <div style="background:var(--primary-light);border-radius:var(--radius-md);padding:1rem;text-align:center;">
+          <div style="font-size:.75rem;color:var(--text-muted);margin-bottom:.2rem;">Ahorrarías aproximadamente</div>
+          <div style="font-family:var(--font-display);font-size:1.8rem;font-weight:900;color:var(--primary-dark);" id="calc-annual">S/ 3,120</div>
+          <div style="font-size:.75rem;color:var(--text-muted);margin-top:.2rem;" id="calc-monthly">S/ 260 / mes</div>
+        </div>
+      </div>
+
+      <!-- Newsletter -->
+      <div class="sidebar-widget newsletter-widget">
+        <div class="widget-title">📬 Newsletter</div>
+        <p class="newsletter-desc">Recibe recetas, ofertas especiales y consejos de sostenibilidad cada semana.</p>
+        <div class="newsletter-input">
+          <input type="email" id="newsletter-email" placeholder="tu@correo.com">
+          <button onclick="subscribeNewsletter()">Suscribir</button>
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<!-- Article Modal -->
+<div class="modal-overlay" id="article-modal">
+  <div class="modal" style="max-width:680px;">
+    <div class="modal-header">
+      <h3 class="modal-title" id="article-modal-title">Artículo</h3>
+      <button class="modal-close" onclick="closeModal('article-modal')">✕</button>
+    </div>
+    <div class="article-modal-body">
+      <div id="article-modal-meta" style="color:var(--text-muted);font-size:.82rem;margin-bottom:1rem;"></div>
+      <div class="article-content" id="article-modal-content"></div>
+    </div>
+    <div style="padding:1rem 0 0;display:flex;gap:.7rem;flex-wrap:wrap;">
+      <button class="btn btn-primary btn-sm" onclick="shareArticleWhatsApp()">📱 Compartir en WhatsApp</button>
+      <button class="btn btn-secondary btn-sm" onclick="closeModal('article-modal')">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/navbar.js"></script>
+<script src="js/app.js"></script>
+<script src="js/extras.js"></script>
+<script>
+const POSTS = [
+  { id:0, cat:'sostenibilidad', emoji:'🌿', title:'Cómo Perú puede eliminar el 30% del desperdicio alimentario', excerpt:'El problema y las soluciones tecnológicas que están cambiando el sector en Lima.', date:'15 Dic 2024', author:'REFOOD PERÚ', readTime:'5 min', featured:true,
+    content:`<h2>El problema es enorme</h2><p>Perú desperdicia 8 millones de toneladas de alimentos al año, con un valor económico de más de S/ 18,000 millones. El 28% de este desperdicio ocurre en supermercados, restaurantes y tiendas.</p><div class="highlight">💡 Dato clave: si el desperdicio alimentario fuera un país, sería el tercer mayor emisor de gases de efecto invernadero del mundo.</div><h2>Cómo REFOOD está cambiando esto</h2><p>Conectamos en tiempo real a los negocios con excedentes con los consumidores que quieren ahorrar. El resultado: los negocios recuperan valor, los usuarios ahorran hasta 70%, y el planeta gana.</p><h2>¿Qué puedes hacer tú?</h2><ul><li>Reservar al menos 2 productos por semana en REFOOD</li><li>Compartir la plataforma con tu familia y amigos</li><li>Planificar tus compras para reducir el desperdicio en casa</li></ul>` },
+  { id:1, cat:'recetas', emoji:'🍳', title:'5 recetas fáciles con plátanos maduros rescatados', excerpt:'Aprovecha los plátanos de seda antes de que venzan con estas deliciosas recetas.', date:'12 Dic 2024', author:'Chef María C.', readTime:'4 min',
+    content:`<h2>Pan de plátano clásico</h2><p>Con 3 plátanos maduros, 2 huevos, 1 taza de harina y azúcar al gusto puedes hacer el mejor pan de plátano en 45 minutos.</p><h2>Batido energético</h2><p>Mezcla plátano con leche, avena y miel para un desayuno nutritivo que rinde todo el día.</p><h2>Plátano asado con canela</h2><p>Simplemente pon el plátano con cáscara en el horno a 180°C por 20 minutos. Sirve con helado de vainilla.</p><div class="highlight">🌿 Estos plátanos fueron rescatados de Plaza Vea — ¡hubieran terminado en la basura!</div>` },
+  { id:2, cat:'tips', emoji:'💡', title:'7 trucos para reducir el desperdicio en tu hogar', excerpt:'Pequeños cambios de hábito que pueden ahorrarte hasta S/ 200 al mes y reducir tu huella.', date:'10 Dic 2024', author:'REFOOD PERÚ', readTime:'3 min',
+    content:`<h2>1. Planifica tus compras</h2><p>Haz una lista antes de ir al supermercado. Compra solo lo que necesitas para la semana.</p><h2>2. FIFO en la nevera</h2><p>Lo que entra primero, sale primero. Pon los productos más antiguos al frente.</p><h2>3. Usa REFOOD para complementar</h2><p>En vez de comprar todo nuevo, revisa qué ofertas hay en REFOOD cerca de ti.</p><h2>4. Congela antes de que venza</h2><p>Pan, carnes y frutas se pueden congelar perfectamente.</p>` },
+  { id:3, cat:'noticias', emoji:'📰', title:'REFOOD PERÚ supera los 8,500 kg rescatados en Lima', excerpt:'Un hito histórico para la plataforma y para la comunidad de rescatadores.', date:'8 Dic 2024', author:'REFOOD PERÚ', readTime:'2 min',
+    content:`<h2>Un hito para Lima</h2><p>Este mes superamos los 8,500 kilogramos de alimentos rescatados desde nuestro lanzamiento. Esto equivale a más de 25,500 porciones de comida que no terminaron en la basura.</p><h2>Gracias a nuestra comunidad</h2><p>Este logro es de los más de 1,200 usuarios activos que confían en REFOOD cada semana y los 22 negocios aliados comprometidos con la sostenibilidad.</p>` },
+  { id:4, cat:'recetas', emoji:'🥗', title:'Ensalada gourmet con verduras próximas a vencer', excerpt:'La ensalada mixta de Metro Surco puede convertirse en un plato de restaurante con estos tips.', date:'5 Dic 2024', author:'Chef Sofía T.', readTime:'3 min',
+    content:`<h2>Ingredientes rescatados</h2><p>Ensalada mixta, tomates cherry, pepino, aguacate y queso fresco. Todos disponibles en REFOOD con hasta 65% de descuento.</p><h2>Aderezo express</h2><p>Limón, aceite de oliva, sal, pimienta y mostaza. Mezcla todo y listo.</p><h2>El secreto</h2><p>Las verduras "feas" o ligeramente maduras tienen más sabor. No las descartes por su apariencia.</p>` },
+  { id:5, cat:'negocios', emoji:'🏪', title:'Por qué Plaza Vea redujo su desperdicio en 60% con REFOOD', excerpt:'El caso de éxito de Plaza Vea San Isidro: cómo la tecnología transformó su gestión de excedentes.', date:'2 Dic 2024', author:'REFOOD PERÚ', readTime:'4 min',
+    content:`<h2>El desafío inicial</h2><p>Plaza Vea San Isidro perdía en promedio 45 kg de alimentos por vencer cada día. El costo anual era significativo y el impacto ambiental, enorme.</p><h2>La solución REFOOD</h2><p>Con el panel de negocios, el equipo empezó a publicar ofertas de productos próximos a vencer en menos de 2 minutos.</p><h2>Resultados en 3 meses</h2><ul><li>60% de reducción en desperdicio</li><li>S/ 2,840 de ingresos recuperados adicionales</li><li>312 kg de alimentos rescatados</li><li>Mejora en percepción de marca sostenible</li></ul>` },
+];
+
+let visiblePosts = 4;
+let activeFilter = '';
+let currentArticle = null;
+
+document.addEventListener('DOMContentLoaded', () => {
+  renderPosts();
+  renderPopular();
+  updateCalc();
+});
+
+function renderPosts() {
+  const grid = document.getElementById('posts-grid');
+  if (!grid) return;
+  const filtered = activeFilter ? POSTS.filter(p => p.cat === activeFilter) : POSTS;
+  const toShow   = filtered.slice(0, visiblePosts);
+  grid.innerHTML  = toShow.map(p => `
+    <div class="post-card" onclick="openArticle(${p.id})">
+      <div class="post-card-img">${p.emoji}</div>
+      <div class="post-card-body">
+        <div class="post-card-category">${p.cat}</div>
+        <h3 class="post-card-title">${escapeHTML(p.title)}</h3>
+        <p class="post-card-excerpt">${escapeHTML(p.excerpt)}</p>
+        <div class="post-card-meta">
+          <span>${p.date} · ${p.author}</span>
+          <span class="read-time">⏱️ ${p.readTime}</span>
+        </div>
+      </div>
+    </div>`).join('');
+
+  const btn = document.getElementById('load-more-btn');
+  if (btn) btn.style.display = filtered.length <= visiblePosts ? 'none' : 'inline-flex';
+}
+
+function renderPopular() {
+  const list = document.getElementById('popular-list');
+  if (!list) return;
+  list.innerHTML = POSTS.slice(0,4).map((p,i) => `
+    <div class="popular-item" onclick="openArticle(${p.id})">
+      <div class="popular-num">${i+1}</div>
+      <div>
+        <div class="popular-title">${escapeHTML(p.title)}</div>
+        <div class="popular-meta">${p.date} · ⏱️ ${p.readTime}</div>
+      </div>
+    </div>`).join('');
+}
+
+function loadMorePosts() {
+  visiblePosts += 4;
+  renderPosts();
+}
+
+function filterPosts(cat) {
+  activeFilter  = cat;
+  visiblePosts  = 4;
+  renderPosts();
+}
+
+function openArticle(id) {
+  const post = POSTS[id];
+  if (!post) return;
+  currentArticle = post;
+  document.getElementById('article-modal-title').textContent   = post.title;
+  document.getElementById('article-modal-meta').innerHTML      = `📅 ${post.date} · ✍️ ${escapeHTML(post.author)} · ⏱️ ${post.readTime}`;
+  document.getElementById('article-modal-content').innerHTML   = post.content;
+  openModal('article-modal');
+}
+
+function shareArticleWhatsApp() {
+  if (!currentArticle) return;
+  const text = `📰 *${currentArticle.title}*\n\n${currentArticle.excerpt}\n\n👉 Lee más en REFOOD PERÚ: https://refoodperu.pe/blog.html`;
+  window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+}
+
+function updateCalc() {
+  const visits   = parseInt(document.getElementById('calc-visits')?.value || 3);
+  const avg      = parseInt(document.getElementById('calc-avg')?.value || 20);
+  const result   = calcAnnualSavings(visits, avg);
+  const vEl = document.getElementById('calc-visits-val');
+  const aEl = document.getElementById('calc-avg-val');
+  const yEl = document.getElementById('calc-annual');
+  const mEl = document.getElementById('calc-monthly');
+  if (vEl) vEl.textContent = `${visits} vece${visits>1?'s':''}`;
+  if (aEl) aEl.textContent = `S/ ${avg}`;
+  if (yEl) yEl.textContent = `S/ ${result.annual.toLocaleString('es-PE',{minimumFractionDigits:0,maximumFractionDigits:0})}`;
+  if (mEl) mEl.textContent = `S/ ${result.monthly.toFixed(0)} / mes · ${result.co2.toFixed(0)} kg CO₂ menos`;
+}
+
+function subscribeNewsletter() {
+  const email = document.getElementById('newsletter-email')?.value.trim();
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    showToast('Ingresa un correo válido', 'warning'); return;
+  }
+  showToast('¡Suscrito! 📬 Gracias por unirte', 'success');
+  const inp = document.getElementById('newsletter-email');
+  if (inp) inp.value = '';
+}
+</script>
+</body>
+</html>

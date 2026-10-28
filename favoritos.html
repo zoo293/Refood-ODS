@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Favoritos — REFOOD PERÚ</title>
+  <meta name="theme-color" content="#1a9e5c">
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="css/styles.css">
+  <style>
+    .user-dropdown{position:absolute;right:0;top:calc(100% + .5rem);background:#fff;border:1px solid var(--border);border-radius:var(--radius-md);box-shadow:var(--shadow-md);min-width:190px;z-index:100;overflow:hidden;}
+    .user-dropdown a{display:block;padding:.7rem 1rem;font-size:.9rem;color:var(--text-main);transition:var(--transition);}
+    .user-dropdown a:hover{background:var(--primary-light);color:var(--primary);}
+    .user-dropdown hr{border:none;border-top:1px solid var(--border);}
+    #nav-auth-zone{position:relative;display:flex;align-items:center;gap:.6rem;}
+  </style>
+</head>
+<body>
+
+<div class="page-standard">
+  <div class="page-title-wrap">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;">
+      <div>
+        <h1 class="page-title">❤️ Mis Favoritos</h1>
+        <p class="page-subtitle" id="favs-subtitle">Tus ofertas guardadas</p>
+      </div>
+      <button class="btn btn-danger btn-sm" id="btn-clear-favs" onclick="clearAllFavorites()" style="display:none">
+        🗑️ Limpiar favoritos
+      </button>
+    </div>
+  </div>
+
+  <div style="max-width:1280px;margin:0 auto;">
+    <div class="offers-grid" id="favs-grid">
+      <!-- Rendered by JS -->
+    </div>
+  </div>
+</div>
+
+<script src="js/navbar.js"></script>
+<script src="js/app.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    renderFavorites();
+  });
+
+  function renderFavorites() {
+    const grid = document.getElementById('favs-grid');
+    const subtitle = document.getElementById('favs-subtitle');
+    const clearBtn = document.getElementById('btn-clear-favs');
+    if (!grid) return;
+
+    const user = Auth.getUser();
+    if (!user) {
+      grid.innerHTML = `
+        <div style="grid-column:1/-1;text-align:center;padding:4rem 2rem;">
+          <div style="font-size:3.5rem;margin-bottom:1rem;">🔒</div>
+          <h3 style="font-family:var(--font-display);font-size:1.3rem;margin-bottom:.5rem;">Inicia sesión primero</h3>
+          <p style="color:var(--text-muted);margin-bottom:1.5rem;">Necesitas una cuenta para guardar favoritos</p>
+          <a href="login.html" class="btn btn-primary">Iniciar sesión</a>
+        </div>`;
+      return;
+    }
+
+    const favIds  = Store.get('rf_favorites', []);
+    const offers  = Store.get('rf_offers', []).filter(o => o.active !== false && favIds.includes(o.id));
+    const cart    = Store.get('rf_cart', []);
+    const cartIds = cart.map(i => i.offerId);
+
+    if (offers.length === 0) {
+      grid.innerHTML = `
+        <div style="grid-column:1/-1;text-align:center;padding:4rem 2rem;">
+          <div style="font-size:3.5rem;margin-bottom:1rem;">🤍</div>
+          <h3 style="font-family:var(--font-display);font-size:1.3rem;margin-bottom:.5rem;">Sin favoritos aún</h3>
+          <p style="color:var(--text-muted);margin-bottom:1.5rem;">Toca el corazón ❤️ en cualquier oferta para guardarla aquí</p>
+          <a href="ofertas.html" class="btn btn-primary">Explorar ofertas</a>
+        </div>`;
+      if (subtitle) subtitle.textContent = '0 ofertas guardadas';
+      if (clearBtn) clearBtn.style.display = 'none';
+      return;
+    }
+
+    grid.innerHTML = offers.map(o => renderOfferCard(o, cartIds.includes(o.id), true)).join('');
+    if (subtitle) subtitle.textContent = `${offers.length} oferta${offers.length > 1 ? 's' : ''} guardada${offers.length > 1 ? 's' : ''}`;
+    if (clearBtn) clearBtn.style.display = 'inline-flex';
+  }
+
+  function clearAllFavorites() {
+    if (!confirm('¿Eliminar todos tus favoritos?')) return;
+    Store.set('rf_favorites', []);
+    showToast('Favoritos eliminados', 'info');
+    renderFavorites();
+  }
+
+  // Re-render after toggling a favorite
+  document.addEventListener('click', e => {
+    if (e.target.classList.contains('fav-btn')) {
+      setTimeout(renderFavorites, 200);
+    }
+  });
+</script>
+</body>
+</html>

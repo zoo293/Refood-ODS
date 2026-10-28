@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mi Perfil — REFOOD PERÚ</title>
+  <meta name="theme-color" content="#1a9e5c">
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="css/styles.css">
+  <style>
+    .user-dropdown{position:absolute;right:0;top:calc(100% + .5rem);background:#fff;border:1px solid var(--border);border-radius:var(--radius-md);box-shadow:var(--shadow-md);min-width:190px;z-index:100;overflow:hidden;}
+    .user-dropdown a{display:block;padding:.7rem 1rem;font-size:.9rem;color:var(--text-main);transition:var(--transition);}
+    .user-dropdown a:hover{background:var(--primary-light);color:var(--primary);}
+    .user-dropdown hr{border:none;border-top:1px solid var(--border);}
+    #nav-auth-zone{position:relative;display:flex;align-items:center;gap:.6rem;}
+
+    .reservation-item {
+      background: var(--bg); border-radius: var(--radius-md);
+      padding: 1rem 1.2rem; margin-bottom: .8rem;
+      border: 1px solid var(--border);
+    }
+    .reservation-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:.5rem; }
+    .reservation-code { font-family:monospace; font-weight:700; font-size:.9rem; color:var(--primary-dark); }
+    .reservation-items { font-size:.83rem; color:var(--text-muted); }
+    .reservation-total { font-family:var(--font-display); font-weight:800; color:var(--primary-dark); }
+
+    .impact-mini { display:grid; grid-template-columns:repeat(3,1fr); gap:1rem; margin-top:1rem; }
+    .impact-mini-box { background:var(--primary-light); border-radius:var(--radius-md); padding:1rem; text-align:center; }
+    .impact-mini-num { font-family:var(--font-display); font-size:1.4rem; font-weight:900; color:var(--primary-dark); }
+    .impact-mini-lbl { font-size:.75rem; color:var(--text-muted); margin-top:.2rem; }
+
+    .form-row-2 { display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
+    @media(max-width:500px){ .form-row-2{grid-template-columns:1fr;} .impact-mini{grid-template-columns:1fr;} }
+  </style>
+</head>
+<body>
+
+<div class="profile-page">
+  <div class="profile-layout">
+
+    <!-- Sidebar -->
+    <aside class="profile-sidebar">
+      <div class="profile-avatar-wrap">
+        <div class="profile-avatar" id="profile-avatar">?</div>
+        <div class="profile-name" id="profile-name">–</div>
+        <div class="profile-email" id="profile-email">–</div>
+        <div style="margin-top:.6rem;">
+          <span class="badge badge-green" id="profile-badge">Usuario activo</span>
+        </div>
+      </div>
+      <nav class="profile-menu">
+        <div class="profile-menu-item active" onclick="showTab('tab-info')">👤 Mi información</div>
+        <div class="profile-menu-item" onclick="showTab('tab-reservations')">📋 Mis reservas</div>
+        <div class="profile-menu-item" onclick="showTab('tab-impact')">🌱 Mi impacto</div>
+        <div class="profile-menu-item" onclick="showTab('tab-referral')">🎁 Referidos</div>
+        <div class="profile-menu-item" onclick="showTab('tab-security')">🔒 Seguridad</div>
+        <div class="profile-menu-item" style="color:var(--danger);margin-top:1rem;" onclick="logoutUser()">🚪 Cerrar sesión</div>
+      </nav>
+    </aside>
+
+    <!-- Content -->
+    <main class="profile-content">
+
+      <!-- Tab: Info -->
+      <div id="tab-info" class="profile-tab">
+        <h2 class="profile-section-title">👤 Mi información personal</h2>
+
+        <!-- Avatar picker -->
+        <div style="text-align:center;margin-bottom:1.5rem;">
+          <div style="position:relative;display:inline-block;">
+            <div class="profile-avatar" id="info-tab-avatar" style="margin:0 auto .8rem;"></div>
+            <label for="user-photo-input" style="position:absolute;bottom:6px;right:-6px;width:30px;height:30px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:.85rem;box-shadow:var(--shadow-sm);">📷</label>
+            <input type="file" accept="image/*" id="user-photo-input" style="display:none;">
+          </div>
+          <div style="font-size:.85rem;color:var(--text-muted);margin-bottom:.6rem;font-weight:600;">O elige un avatar</div>
+          <div id="avatar-picker"></div>
+        </div>
+
+        <form id="form-profile" novalidate>
+          <div class="form-row-2">
+            <div class="form-group">
+              <label class="form-label">Nombre completo</label>
+              <input class="form-control" type="text" id="p-name" placeholder="Tu nombre">
+              <span class="form-error"></span>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Teléfono</label>
+              <input class="form-control" type="tel" id="p-phone" placeholder="987 654 321">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Correo electrónico</label>
+            <input class="form-control" type="email" id="p-email" disabled style="opacity:.6;cursor:not-allowed">
+            <span class="form-hint">El correo no puede modificarse</span>
+          </div>
+          <div class="form-row-2">
+            <div class="form-group">
+              <label class="form-label">Dirección</label>
+              <input class="form-control" type="text" id="p-address" placeholder="Av. Ejemplo 123">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Distrito</label>
+              <select class="form-control" id="p-district">
+                <option value="">Selecciona tu distrito</option>
+                <option>Miraflores</option><option>San Isidro</option><option>Surco</option>
+                <option>La Molina</option><option>Lince</option><option>Barranco</option>
+                <option>San Borja</option><option>Jesús María</option><option>Pueblo Libre</option>
+                <option>Magdalena</option><option>San Miguel</option><option>Callao</option>
+                <option>Otro</option>
+              </select>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary">💾 Guardar cambios</button>
+        </form>
+      </div>
+
+      <!-- Tab: Reservas -->
+      <div id="tab-reservations" class="profile-tab hidden">
+        <h2 class="profile-section-title">📋 Mis reservas</h2>
+        <div id="reservations-list"><!-- Rendered by JS --></div>
+      </div>
+
+      <!-- Tab: Impacto -->
+      <div id="tab-impact" class="profile-tab hidden">
+        <h2 class="profile-section-title">🌱 Mi impacto ambiental</h2>
+
+        <!-- Savings banner -->
+        <div class="savings-banner" id="savings-banner">
+          <div>
+            <div class="savings-num" id="savings-amount">S/ 0.00</div>
+            <div class="savings-label">ahorrado en total</div>
+            <div class="savings-sub" id="savings-sub">en 0 reservas realizadas</div>
+          </div>
+          <div style="flex:1;min-width:160px;">
+            <div style="font-size:.82rem;color:#7a5500;margin-bottom:.4rem;font-weight:600;">Progreso del mes</div>
+            <div style="height:8px;background:#f0c04066;border-radius:50px;overflow:hidden;">
+              <div id="savings-bar" style="height:100%;background:linear-gradient(90deg,var(--accent),#f7c04a);border-radius:50px;width:0%;transition:width 1s ease;"></div>
+            </div>
+            <div style="font-size:.75rem;color:#9a7020;margin-top:.3rem;" id="savings-goal">Meta: S/ 100 este mes</div>
+          </div>
+        </div>
+
+        <!-- Stats mini -->
+        <div class="impact-mini">
+          <div class="impact-mini-box">
+            <div class="impact-mini-num" id="u-rescued">0</div>
+            <div class="impact-mini-lbl">Productos rescatados</div>
+          </div>
+          <div class="impact-mini-box">
+            <div class="impact-mini-num" id="u-co2">0kg</div>
+            <div class="impact-mini-lbl">CO₂ evitado</div>
+          </div>
+          <div class="impact-mini-box">
+            <div class="impact-mini-num" id="u-water">0L</div>
+            <div class="impact-mini-lbl">Agua ahorrada</div>
+          </div>
+        </div>
+
+        <!-- Level card -->
+        <div style="background:var(--primary-light);border-radius:var(--radius-md);padding:1.5rem;margin-top:1.2rem;text-align:center;">
+          <div style="font-size:2rem;margin-bottom:.5rem;">🏆</div>
+          <div id="impact-level" style="font-family:var(--font-display);font-weight:800;font-size:1.1rem;color:var(--primary-dark);">Rescatador Novato</div>
+          <p style="font-size:.85rem;color:var(--text-muted);margin-top:.3rem;" id="impact-msg">Haz tu primera reserva para comenzar</p>
+        </div>
+
+        <!-- Badges -->
+        <h3 style="font-family:var(--font-display);font-weight:800;margin:1.5rem 0 .5rem;">🎖️ Mis Badges</h3>
+        <p style="font-size:.85rem;color:var(--text-muted);margin-bottom:1rem;">Gana badges completando metas de rescate</p>
+        <div class="badges-grid" id="user-badges"></div>
+
+        <!-- Diario de impacto -->
+        <h3 style="font-family:var(--font-display);font-weight:800;margin:2rem 0 .8rem;">📅 Mi diario de impacto</h3>
+        <div style="background:var(--bg-card);border-radius:var(--radius-lg);padding:1.5rem;border:1px solid var(--border);box-shadow:var(--shadow-sm);">
+          <div id="impact-calendar"></div>
+        </div>
+
+        <!-- Certificado -->
+        <h3 style="font-family:var(--font-display);font-weight:800;margin:2rem 0 1rem;">🏅 Certificado de Impacto</h3>
+        <div class="cert-wrap" id="cert-wrap">
+          <div class="cert-logo">🌿</div>
+          <div class="cert-title">Certificado de Impacto Ambiental</div>
+          <div class="cert-subtitle">REFOOD PERÚ reconoce la contribución de</div>
+          <div class="cert-name" id="cert-name">–</div>
+          <div class="cert-stats">
+            <div class="cert-stat-box">
+              <div class="cert-stat-num" id="cert-rescued">0</div>
+              <div class="cert-stat-lbl">Productos rescatados</div>
+            </div>
+            <div class="cert-stat-box">
+              <div class="cert-stat-num" id="cert-co2">0kg</div>
+              <div class="cert-stat-lbl">CO₂ evitado</div>
+            </div>
+            <div class="cert-stat-box">
+              <div class="cert-stat-num" id="cert-saved">S/ 0</div>
+              <div class="cert-stat-lbl">Ahorrado</div>
+            </div>
+          </div>
+          <div class="cert-seal">🌍</div>
+          <div class="cert-footer-text">Emitido por REFOOD PERÚ · Lima, Perú · 2024</div>
+        </div>
+        <div style="text-align:center;margin-top:1rem;">
+          <button class="btn btn-primary btn-sm" onclick="window.print()">🖨️ Imprimir certificado</button>
+          <a href="impacto-ambiental.html" class="btn btn-secondary btn-sm">Ver impacto global →</a>
+        </div>
+      </div>
+
+      <!-- Tab: Referidos -->
+      <div id="tab-referral" class="profile-tab hidden">
+        <h2 class="profile-section-title">🎁 Programa de Referidos</h2>
+        <p style="color:var(--text-muted);font-size:.9rem;margin-bottom:1.5rem;">Invita a tus amigos y familiares a rescatar alimentos. ¡Juntos tienen más impacto!</p>
+
+        <!-- Referral code card -->
+        <div style="background:linear-gradient(135deg,var(--primary-dark),var(--primary));border-radius:var(--radius-xl);padding:2rem;text-align:center;color:#fff;margin-bottom:1.5rem;">
+          <div style="font-size:2rem;margin-bottom:.5rem;">🎁</div>
+          <div style="font-size:.85rem;color:rgba(255,255,255,.75);margin-bottom:.5rem;">Tu código de referido</div>
+          <div id="referral-code-display" style="font-family:monospace;font-size:2rem;font-weight:900;letter-spacing:.2em;color:#48d888;background:rgba(255,255,255,.1);padding:.5rem 1.5rem;border-radius:var(--radius-md);display:inline-block;margin-bottom:1rem;">––––</div>
+          <div style="display:flex;gap:.7rem;justify-content:center;flex-wrap:wrap;">
+            <button onclick="copyReferralCode()" class="btn btn-sm" style="background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3);">📋 Copiar código</button>
+            <button onclick="shareReferral()" class="btn btn-sm" style="background:#25d366;color:#fff;border:none;">📱 Compartir en WhatsApp</button>
+          </div>
+        </div>
+
+        <!-- How it works -->
+        <div style="background:var(--bg);border-radius:var(--radius-lg);padding:1.5rem;margin-bottom:1.5rem;">
+          <h3 style="font-family:var(--font-display);font-weight:800;margin-bottom:1rem;font-size:.98rem;">¿Cómo funciona?</h3>
+          <div style="display:flex;flex-direction:column;gap:.8rem;">
+            <div style="display:flex;gap:.8rem;align-items:center;">
+              <div style="width:32px;height:32px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;flex-shrink:0;">1</div>
+              <span style="font-size:.88rem;color:var(--text-muted);">Comparte tu código con amigos y familiares</span>
+            </div>
+            <div style="display:flex;gap:.8rem;align-items:center;">
+              <div style="width:32px;height:32px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;flex-shrink:0;">2</div>
+              <span style="font-size:.88rem;color:var(--text-muted);">Ellos se registran usando tu código</span>
+            </div>
+            <div style="display:flex;gap:.8rem;align-items:center;">
+              <div style="width:32px;height:32px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;flex-shrink:0;">3</div>
+              <span style="font-size:.88rem;color:var(--text-muted);">Ambos contribuyen más al reto mensual de rescate</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Referral stats -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+          <div style="background:var(--primary-light);border-radius:var(--radius-md);padding:1rem;text-align:center;">
+            <div style="font-family:var(--font-display);font-size:1.8rem;font-weight:900;color:var(--primary-dark);" id="ref-count">0</div>
+            <div style="font-size:.78rem;color:var(--text-muted);">Amigos referidos</div>
+          </div>
+          <div style="background:var(--accent-light);border-radius:var(--radius-md);padding:1rem;text-align:center;">
+            <div style="font-family:var(--font-display);font-size:1.8rem;font-weight:900;color:#8a6000;" id="ref-rescued">0 kg</div>
+            <div style="font-size:.78rem;color:var(--text-muted);">Rescatados por tus referidos</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab: Seguridad -->
+      <div id="tab-security" class="profile-tab hidden">
+        <h2 class="profile-section-title">🔒 Seguridad</h2>
+        <form id="form-password" novalidate>
+          <div class="form-group">
+            <label class="form-label">Contraseña actual</label>
+            <input class="form-control" type="password" id="s-current" placeholder="Tu contraseña actual">
+            <span class="form-error"></span>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Nueva contraseña</label>
+            <input class="form-control" type="password" id="s-new" placeholder="Mínimo 6 caracteres">
+            <span class="form-error"></span>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Confirmar nueva contraseña</label>
+            <input class="form-control" type="password" id="s-confirm" placeholder="Repite la nueva contraseña">
+            <span class="form-error"></span>
+          </div>
+          <button type="submit" class="btn btn-primary">🔒 Cambiar contraseña</button>
+        </form>
+        <hr style="border:none;border-top:1px solid var(--border);margin:2rem 0;">
+        <div>
+          <h3 style="font-size:1rem;font-weight:700;margin-bottom:.5rem;color:var(--danger)">Zona de peligro</h3>
+          <p style="font-size:.88rem;color:var(--text-muted);margin-bottom:1rem;">Estas acciones son irreversibles</p>
+          <button class="btn btn-danger btn-sm" onclick="logoutUser()">🚪 Cerrar sesión en todos los dispositivos</button>
+        </div>
+        <hr style="border:none;border-top:1px solid var(--border);margin:1.5rem 0;">
+        <div>
+          <h3 style="font-size:1rem;font-weight:700;margin-bottom:.8rem;">📤 Exportar mis datos</h3>
+          <div style="display:flex;flex-direction:column;gap:.6rem;">
+            <button class="btn btn-secondary btn-sm" onclick="if(typeof exportReservationsPDF==='function')exportReservationsPDF()">📄 Exportar historial en PDF</button>
+            <a href="herramientas.html" class="btn btn-secondary btn-sm" style="text-align:center;">🛠️ Herramientas y accesibilidad</a>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<script src="js/navbar.js"></script>
+<script src="js/app.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/extras.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    requireUser();
+    loadProfileData();
+    initProfileForms();
+  });
+
+  function loadProfileData() {
+    const user = Auth.getUser();
+    if (!user) return;
+
+    const initials = (user.name || 'U').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+    const avatarEl = document.getElementById('profile-avatar');
+    const infoAvatarEl = document.getElementById('info-tab-avatar');
+    [avatarEl, infoAvatarEl].forEach(el => {
+      if (!el) return;
+      if (user.photo) {
+        el.style.backgroundImage = `url('${user.photo}')`;
+        el.style.backgroundSize = 'cover';
+        el.style.backgroundPosition = 'center';
+        el.textContent = '';
+      } else {
+        el.style.backgroundImage = '';
+        el.style.background = 'linear-gradient(135deg, var(--primary), var(--accent))';
+        el.textContent = user.avatar || initials;
+      }
+    });
+    document.getElementById('profile-name').textContent   = user.name;
+    document.getElementById('profile-email').textContent  = user.email;
+
+    // Populate form
+    document.getElementById('p-name').value    = user.name    || '';
+    document.getElementById('p-email').value   = user.email   || '';
+    document.getElementById('p-phone').value   = user.phone   || '';
+    document.getElementById('p-address').value = user.address || '';
+    const districtSel = document.getElementById('p-district');
+    if (districtSel) districtSel.value = user.district || '';
+
+    // Reservations
+    const reservations = Store.get('rf_reservations', []).filter(r => r.userId === user.id);
+    renderReservations(reservations);
+
+    // Impact
+    const rescued = reservations.reduce((s, r) => s + (r.items || []).reduce((ss, i) => ss + (i.qty || 1), 0), 0);
+    const co2     = (rescued * 0.5).toFixed(1);
+    const water   = rescued * 150;
+    document.getElementById('u-rescued').textContent = rescued;
+    document.getElementById('u-co2').textContent     = co2 + 'kg';
+    document.getElementById('u-water').textContent   = water + 'L';
+
+    // Level
+    const levelEl = document.getElementById('impact-level');
+    const msgEl   = document.getElementById('impact-msg');
+    if (rescued === 0) { levelEl.textContent = 'Rescatador Novato'; msgEl.textContent = 'Haz tu primera reserva para comenzar'; }
+    else if (rescued < 5)  { levelEl.textContent = '🌱 Rescatador Verde'; msgEl.textContent = '¡Genial! Estás empezando tu huella verde'; }
+    else if (rescued < 15) { levelEl.textContent = '🌿 Rescatador Activo'; msgEl.textContent = 'Tu compromiso con el planeta es inspirador'; }
+    else if (rescued < 30) { levelEl.textContent = '🌳 Rescatador Experto'; msgEl.textContent = 'Eres un referente en la lucha contra el desperdicio'; }
+    else                   { levelEl.textContent = '🏆 Héroe del Planeta'; msgEl.textContent = '¡Increíble! Eres un verdadero héroe ambiental'; }
+
+    // Savings tracker
+    const savings = getUserSavings(user.id);
+    const savingsAmountEl = document.getElementById('savings-amount');
+    const savingsSubEl    = document.getElementById('savings-sub');
+    const savingsBarEl    = document.getElementById('savings-bar');
+    if (savingsAmountEl) savingsAmountEl.textContent = formatCurrency(savings.totalSaved);
+    if (savingsSubEl)    savingsSubEl.textContent    = `en ${savings.count} reserva${savings.count !== 1 ? 's' : ''} realizadas`;
+    if (savingsBarEl)    setTimeout(() => { savingsBarEl.style.width = Math.min(100, (savings.totalSaved / 100) * 100) + '%'; }, 300);
+
+    // Badges
+    renderBadges('user-badges', user);
+
+    // Avatar picker
+    if (typeof renderAvatarPicker === 'function') renderAvatarPicker('avatar-picker', null);
+
+    // Impact calendar
+    if (typeof renderImpactCalendar === 'function') renderImpactCalendar('impact-calendar', user.id);
+
+    // Certificate
+    const certName    = document.getElementById('cert-name');
+    const certRescued = document.getElementById('cert-rescued');
+    const certCo2     = document.getElementById('cert-co2');
+    const certSaved   = document.getElementById('cert-saved');
+    if (certName)    certName.textContent    = user.name;
+    if (certRescued) certRescued.textContent = rescued;
+    if (certCo2)     certCo2.textContent     = co2 + 'kg';
+    if (certSaved)   certSaved.textContent   = formatCurrency(savings.totalSaved);
+  } // fin loadProfileData
+
+  function renderReservations(reservations) {
+    const list = document.getElementById('reservations-list');
+    if (!list) return;
+    if (!reservations.length) {
+      list.innerHTML = `<div style="text-align:center;padding:3rem 1rem;">
+        <div style="font-size:3rem;margin-bottom:1rem;">📋</div>
+        <p style="color:var(--text-muted);">Aún no tienes reservas. <a href="ofertas.html" style="color:var(--primary);font-weight:600">Explora las ofertas</a></p>
+      </div>`;
+      return;
+    }
+    list.innerHTML = reservations.slice().reverse().map(r => {
+      const d = new Date(r.createdAt);
+      const itemNames = (r.items || []).map(i => i.name).join(', ');
+      return `<div class="reservation-item fade-in">
+        <div class="reservation-header">
+          <span class="reservation-code">#${r.id.slice(1, 7).toUpperCase()}</span>
+          <span class="badge badge-green">${r.status}</span>
+        </div>
+        <div class="reservation-items">🛒 ${itemNames}</div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:.5rem;">
+          <span style="font-size:.8rem;color:var(--text-muted);">📅 ${d.toLocaleDateString('es-PE', {day:'2-digit',month:'short',year:'numeric'})}</span>
+          <span class="reservation-total">${formatCurrency(r.total)}</span>
+        </div>
+        <button onclick="buyAgain('${r.id}')" class="btn btn-secondary btn-sm" style="width:100%;margin-top:.5rem;font-size:.8rem;">🔄 Comprar de nuevo</button>
+      </div>`;
+    }).join('');
+  }
+
+  function showTab(tabId) {
+    document.querySelectorAll('.profile-tab').forEach(t => t.classList.add('hidden'));
+    document.querySelectorAll('.profile-menu-item').forEach(m => m.classList.remove('active'));
+    document.getElementById(tabId)?.classList.remove('hidden');
+    const idx = { 'tab-info':0,'tab-reservations':1,'tab-impact':2,'tab-referral':3,'tab-security':4 }[tabId] ?? 0;
+    document.querySelectorAll('.profile-menu-item')[idx]?.classList.add('active');
+
+    // Load referral code when tab opens
+    if (tabId === 'tab-referral') {
+      const code = getUserReferralCode();
+      const codeEl = document.getElementById('referral-code-display');
+      if (codeEl && code) codeEl.textContent = code;
+    }
+  }
+
+  function initProfileForms() {
+    // Foto de perfil
+    bindPhotoInput('user-photo-input', (dataUrl) => { setUserPhoto(dataUrl); loadProfileData(); });
+
+    // Profile info form
+    document.getElementById('form-profile')?.addEventListener('submit', e => {
+      e.preventDefault();
+      const user  = Auth.getUser();
+      const users = Store.get('rf_users', []);
+      const idx   = users.findIndex(u => u.id === user.id);
+
+      const name    = document.getElementById('p-name').value.trim();
+      const phone   = document.getElementById('p-phone').value.trim();
+      const address = document.getElementById('p-address').value.trim();
+      const district= document.getElementById('p-district').value;
+
+      if (!name) { showToast('El nombre es obligatorio', 'warning'); return; }
+
+      if (idx !== -1) {
+        users[idx] = { ...users[idx], name, phone, address, district };
+        Store.set('rf_users', users);
+      }
+      Store.set('rf_current_user', { ...user, name, phone, address, district });
+      showToast('Perfil actualizado ✅', 'success');
+      loadProfileData();
+    });
+
+    // Password form
+    document.getElementById('form-password')?.addEventListener('submit', e => {
+      e.preventDefault();
+      const user    = Auth.getUser();
+      const users   = Store.get('rf_users', []);
+      const stored  = users.find(u => u.id === user.id);
+      const current = document.getElementById('s-current').value;
+      const newPass = document.getElementById('s-new').value;
+      const confirm = document.getElementById('s-confirm').value;
+
+      if (!stored || atob(stored.password) !== current) {
+        showToast('Contraseña actual incorrecta', 'error'); return;
+      }
+      if (newPass.length < 6) { showToast('La nueva contraseña debe tener al menos 6 caracteres', 'warning'); return; }
+      if (newPass !== confirm) { showToast('Las contraseñas no coinciden', 'warning'); return; }
+
+      const idx = users.findIndex(u => u.id === user.id);
+      if (idx !== -1) { users[idx].password = btoa(newPass); Store.set('rf_users', users); }
+      document.getElementById('form-password').reset();
+      showToast('Contraseña actualizada ✅', 'success');
+    });
+  }
+</script>
+</body>
+</html>

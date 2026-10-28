@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ofertas — REFOOD PERÚ</title>
+  <meta name="theme-color" content="#1a9e5c">
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="css/styles.css">
+  <style>.offers-page { min-height:100vh; padding-top:var(--nav-h); }
+
+    /* ── Hero ── */
+    .offers-hero {
+      background: linear-gradient(135deg,#0d2b1a,#1a4f30);
+      padding:calc(var(--nav-h) + 2rem) 2rem 1.5rem; color:#fff;
+    }
+    .offers-hero-inner { max-width:1280px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:1rem; }
+    .offers-hero h1 { font-family:var(--font-display); font-size:clamp(1.4rem,3vw,2rem); font-weight:900; margin-bottom:.3rem; }
+    .offers-hero p  { color:rgba(255,255,255,.72); font-size:.9rem; }
+    .hero-stats-mini { display:flex; gap:1.2rem; flex-wrap:wrap; }
+    .hero-stat-mini { text-align:center; background:rgba(255,255,255,.1); border-radius:var(--radius-md); padding:.6rem 1rem; }
+    .hero-stat-mini-num { font-family:var(--font-display); font-size:1.3rem; font-weight:900; color:#48d888; display:block; }
+    .hero-stat-mini-lbl { font-size:.7rem; color:rgba(255,255,255,.6); }
+
+    /* ── Body ── */
+    .offers-body { max-width:1280px; margin:0 auto; padding:1.4rem 1.5rem 3rem; }
+
+    /* ── Toolbar ── */
+    .toolbar { display:flex; gap:.8rem; align-items:center; flex-wrap:wrap; margin-bottom:1rem; }
+    .sort-select {
+      padding:.48rem .9rem; border-radius:50px; border:1.5px solid var(--border);
+      background:#fff; font-size:.83rem; outline:none; cursor:pointer; color:var(--text-main);
+      transition:var(--transition);
+    }
+    .sort-select:focus { border-color:var(--primary); }
+
+    /* ── Filters ── */
+    .filter-bar { display:flex; gap:.45rem; flex-wrap:wrap; margin-bottom:1.2rem; }
+    .filter-chip {
+      padding:.38rem .85rem; border-radius:50px; background:#fff;
+      border:1.5px solid var(--border); font-size:.8rem; font-weight:500;
+      color:var(--text-muted); cursor:pointer; transition:var(--transition);
+      display:flex; align-items:center; gap:.25rem; white-space:nowrap;
+    }
+    .filter-chip:hover  { border-color:var(--primary); color:var(--primary); }
+    .filter-chip.active { background:var(--primary); color:#fff; border-color:var(--primary); }
+
+    /* ── District filter ── */
+    .district-bar { display:flex; gap:.4rem; flex-wrap:wrap; margin-bottom:1rem; align-items:center; }
+    .district-label-txt { font-size:.78rem; font-weight:600; color:var(--text-muted); margin-right:.2rem; }
+    .district-chip {
+      padding:.28rem .7rem; border-radius:50px; background:var(--bg);
+      border:1.5px solid var(--border); font-size:.76rem; font-weight:500;
+      color:var(--text-muted); cursor:pointer; transition:var(--transition); white-space:nowrap;
+    }
+    .district-chip:hover  { border-color:var(--primary); color:var(--primary); }
+    .district-chip.active { background:var(--primary-light); color:var(--primary-dark); border-color:var(--primary); font-weight:600; }
+
+    .results-row { display:flex; align-items:center; justify-content:space-between; margin-bottom:1.2rem; flex-wrap:wrap; gap:.5rem; }
+    #results-count { font-size:.88rem; color:var(--text-muted); font-weight:500; }
+
+    .urgency-banner {
+      background:linear-gradient(90deg,#fde8e6,#fff3cc); border:1px solid #f5c0b0;
+      border-radius:var(--radius-md); padding:.7rem 1.1rem; margin-bottom:1.1rem;
+      display:flex; align-items:center; gap:.6rem; font-size:.86rem; color:#7a2a1a; font-weight:500;
+    }
+
+    @media(max-width:640px){ .toolbar{flex-direction:column;align-items:stretch;} }
+  </style>
+</head>
+<body>
+
+<div class="offers-page">
+
+  <!-- Hero -->
+  <div class="offers-hero">
+    <div class="offers-hero-inner">
+      <div>
+        <h1>🛍️ Ofertas disponibles ahora</h1>
+        <p>Productos próximos a vencer con hasta 70% de descuento · Recoge hoy mismo en Lima</p>
+      </div>
+      <div class="hero-stats-mini">
+        <div class="hero-stat-mini">
+          <span class="hero-stat-mini-num" id="hero-offers-count">50</span>
+          <span class="hero-stat-mini-lbl">Ofertas activas</span>
+        </div>
+        <div class="hero-stat-mini">
+          <span class="hero-stat-mini-num" id="hero-stores-count">22</span>
+          <span class="hero-stat-mini-lbl">Tiendas aliadas</span>
+        </div>
+        <div class="hero-stat-mini">
+          <span class="hero-stat-mini-num">70%</span>
+          <span class="hero-stat-mini-lbl">Descuento máx.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="offers-body">
+
+    <!-- Urgency banner -->
+    <div class="urgency-banner">
+      ⏰ <strong>¡Atención!</strong> Varias ofertas vencen hoy. ¡Reserva antes de que se agoten!
+    </div>
+
+    <!-- Toolbar -->
+    <div class="toolbar">
+      <div class="search-bar" style="flex:1;min-width:200px;">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="global-search" placeholder="Buscar productos, tiendas o categorías…">
+      </div>
+      <select class="sort-select" onchange="sortOffers(this.value)">
+        <option value="expiry">⏰ Más urgentes</option>
+        <option value="discount">🔥 Mayor descuento</option>
+        <option value="price">💰 Menor precio</option>
+        <option value="name">🔤 Nombre A–Z</option>
+      </select>
+    </div>
+
+    <!-- Categorías -->
+    <div class="filter-bar" id="category-filters">
+      <button class="filter-chip active" data-filter="todos">🌟 Todos</button>
+      <button class="filter-chip" data-filter="lácteos">🥛 Lácteos</button>
+      <button class="filter-chip" data-filter="panadería">🍞 Panadería</button>
+      <button class="filter-chip" data-filter="frutas">🍎 Frutas</button>
+      <button class="filter-chip" data-filter="verduras">🥦 Verduras</button>
+      <button class="filter-chip" data-filter="bebidas">🥤 Bebidas</button>
+      <button class="filter-chip" data-filter="restaurante">🍽️ Restaurantes</button>
+      <button class="filter-chip" data-filter="carnes">🥩 Carnes</button>
+      <button class="filter-chip" data-filter="snacks">🍪 Snacks</button>
+    </div>
+
+    <!-- Distritos -->
+    <div class="district-bar">
+      <span class="district-label-txt">📍 Distrito:</span>
+      <button class="district-chip active" data-district="">Todos</button>
+      <button class="district-chip" data-district="San Isidro">San Isidro</button>
+      <button class="district-chip" data-district="Miraflores">Miraflores</button>
+      <button class="district-chip" data-district="Surco">Surco</button>
+      <button class="district-chip" data-district="San Borja">San Borja</button>
+      <button class="district-chip" data-district="La Molina">La Molina</button>
+      <button class="district-chip" data-district="Barranco">Barranco</button>
+      <button class="district-chip" data-district="Lince">Lince</button>
+      <button class="district-chip" data-district="Jesús María">Jesús María</button>
+      <button class="district-chip" data-district="Magdalena">Magdalena</button>
+      <button class="district-chip" data-district="Los Olivos">Los Olivos</button>
+      <button class="district-chip" data-district="Callao">Callao</button>
+      <button class="district-chip" data-district="San Miguel">San Miguel</button>
+      <button class="district-chip" data-district="Chorrillos">Chorrillos</button>
+    </div>
+
+    <!-- Results row -->
+    <div class="results-row">
+      <span id="results-count">Cargando ofertas…</span>
+      <div style="display:flex;gap:.6rem;align-items:center;">
+        <button class="btn btn-ghost btn-sm" onclick="resetFilters()">🔄 Limpiar filtros</button>
+        <a href="mapa.html" class="btn btn-secondary btn-sm">🗺️ Ver en mapa</a>
+      </div>
+    </div>
+
+    <!-- Grid -->
+    <div class="offers-grid" id="offers-grid">
+      <div class="skeleton" style="height:360px;border-radius:var(--radius-lg)"></div>
+      <div class="skeleton" style="height:360px;border-radius:var(--radius-lg)"></div>
+      <div class="skeleton" style="height:360px;border-radius:var(--radius-lg)"></div>
+      <div class="skeleton" style="height:360px;border-radius:var(--radius-lg)"></div>
+    </div>
+
+  </div>
+</div>
+
+<footer class="footer">
+  <div style="max-width:1280px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;">
+    <span style="color:rgba(255,255,255,.6);font-size:.85rem;">© 2024 REFOOD PERÚ — Rescatando alimentos en Lima</span>
+    <div style="display:flex;gap:1rem;">
+      <a href="index.html"  style="color:rgba(255,255,255,.5);font-size:.85rem;">Inicio</a>
+      <a href="mapa.html"   style="color:rgba(255,255,255,.5);font-size:.85rem;">Mapa</a>
+      <a href="impacto-ambiental.html" style="color:rgba(255,255,255,.5);font-size:.85rem;">Impacto</a>
+    </div>
+  </div>
+</footer>
+
+<script src="js/navbar.js"></script>
+<script src="js/app.js"></script>
+<script src="js/ofertas.js"></script>
+<script src="js/extras.js"></script>
+<script>
+// Update hero counts
+document.addEventListener('DOMContentLoaded', () => {
+  const offers = Store.get('rf_offers',[]).filter(o=>o.active!==false);
+  const biz    = Store.get('rf_businesses_public',[]);
+  const hoc = document.getElementById('hero-offers-count');
+  const hsc = document.getElementById('hero-stores-count');
+  if (hoc) hoc.textContent = offers.length;
+  if (hsc) hsc.textContent = biz.length;
+});
+
+// District filter — dispatch event (handled by ofertas.js)
+document.querySelectorAll('.district-chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    document.querySelectorAll('.district-chip').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+    document.dispatchEvent(new CustomEvent('rf:district', { detail: { district: chip.dataset.district } }));
+  });
+});
+</script>
+</body>
+</html>

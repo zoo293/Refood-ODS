@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel de Negocio — REFOOD PERÚ</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+  <style>.panel-page { min-height:100vh; padding:calc(var(--nav-h) + 1.5rem) 1.5rem 3rem; background:var(--bg); }
+    #panel-page { max-width:1300px; margin:0 auto; display:grid; grid-template-columns:220px 1fr; gap:1.5rem; }
+
+    .panel-sidebar {
+      background:var(--bg-dark); border-radius:var(--radius-lg); padding:1.5rem;
+      height:fit-content; position:sticky; top:calc(var(--nav-h) + 1.5rem);
+    }
+    .panel-logo { display:flex; align-items:center; gap:.6rem; margin-bottom:2rem; }
+    .panel-logo-icon { width:36px; height:36px; border-radius:9px; background:var(--primary); display:flex; align-items:center; justify-content:center; font-size:1.1rem; }
+    .panel-logo-text { font-family:var(--font-display); font-weight:700; font-size:.9rem; color:#fff; line-height:1.2; }
+    .panel-biz-name { font-size:.75rem; color:rgba(255,255,255,.5); }
+
+    .panel-nav { display:flex; flex-direction:column; gap:.3rem; }
+    .panel-nav-item {
+      display:flex; align-items:center; gap:.7rem;
+      padding:.65rem 1rem; border-radius:var(--radius-sm);
+      font-size:.88rem; font-weight:500; color:rgba(255,255,255,.6);
+      cursor:pointer; transition:var(--transition); user-select:none;
+    }
+    .panel-nav-item:hover { background:rgba(255,255,255,.08); color:#fff; }
+    .panel-nav-item.active { background:var(--primary); color:#fff; }
+    .panel-nav-divider { height:1px; background:rgba(255,255,255,.1); margin:.5rem 0; }
+
+    .panel-main { display:flex; flex-direction:column; gap:1.5rem; }
+    .panel-section { display:none; }
+    .panel-section:not(.hidden) { display:block; }
+
+    /* Table */
+    .data-table { width:100%; border-collapse:collapse; }
+    .data-table th { background:var(--bg); padding:.7rem 1rem; text-align:left; font-size:.82rem; font-weight:600; color:var(--text-muted); border-bottom:2px solid var(--border); }
+    .data-table td { padding:.85rem 1rem; border-bottom:1px solid var(--border); font-size:.88rem; vertical-align:middle; }
+    .data-table tr:hover td { background:var(--bg); }
+    .table-wrap { background:#fff; border-radius:var(--radius-lg); border:1px solid var(--border); box-shadow:var(--shadow-sm); overflow:hidden; overflow-x:auto; }
+
+    /* Form offer */
+    .offer-form-card { background:#fff; border-radius:var(--radius-lg); padding:2rem; border:1px solid var(--border); box-shadow:var(--shadow-sm); }
+    .form-row-2 { display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
+    .form-row-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:1rem; }
+    #discount-preview { font-size:.85rem; font-weight:600; color:var(--primary); margin-top:.3rem; min-height:1.2em; }
+
+    /* Emoji picker */
+    .emoji-grid { display:flex; flex-wrap:wrap; gap:.3rem; }
+    .emoji-option { font-size:1.4rem; cursor:pointer; padding:.2rem; border-radius:4px; transition:var(--transition); }
+    .emoji-option:hover,.emoji-option.selected { background:var(--primary-light); }
+
+    @media(max-width:900px){
+      #panel-page{grid-template-columns:1fr;}
+      .panel-sidebar{position:static;}
+      .panel-nav{flex-direction:row;flex-wrap:wrap;gap:.4rem;}
+      .panel-nav-divider{display:none;}
+    }
+    @media(max-width:500px){ .form-row-2,.form-row-3{grid-template-columns:1fr;} }
+  </style>
+</head>
+<body>
+
+<div class="panel-page">
+<div id="panel-page">
+
+  <!-- Sidebar -->
+  <aside class="panel-sidebar">
+    <div class="panel-logo">
+      <div class="panel-logo-icon" id="panel-logo-icon">🌿</div>
+      <div>
+        <div class="panel-logo-text">REFOOD PERÚ</div>
+        <div class="panel-biz-name" id="panel-biz-name">Mi negocio</div>
+      </div>
+    </div>
+    <nav class="panel-nav">
+      <div class="panel-nav-item active" data-panel="panel-overview">📊 Resumen</div>
+      <div class="panel-nav-item" data-panel="panel-offers">🏷️ Mis Ofertas</div>
+      <div class="panel-nav-item" data-panel="panel-new-offer">➕ Nueva Oferta</div>
+      <div class="panel-nav-item" data-panel="panel-reservations">📋 Reservas</div>
+      <div class="panel-nav-item" data-panel="panel-profile">⚙️ Mi Negocio</div>
+      <div class="panel-nav-divider"></div>
+      <div class="panel-nav-item" onclick="window.location='ofertas.html'">🛍️ Ver Ofertas</div>
+      <div class="panel-nav-item" onclick="toggleTheme()" id="theme-toggle" style="font-size:.85rem;">🌙 Modo oscuro</div>
+      <div class="panel-nav-item" onclick="logoutBusiness()" style="color:rgba(255,100,100,.7)">🚪 Salir</div>
+    </nav>
+  </aside>
+
+  <!-- Main -->
+  <main class="panel-main">
+
+    <!-- OVERVIEW -->
+    <section id="panel-overview" class="panel-section">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem;">
+        <div>
+          <h1 style="font-family:var(--font-display);font-size:1.7rem;font-weight:900;">📊 Resumen del negocio</h1>
+          <p style="color:var(--text-muted);margin-top:.2rem;">Hola, <strong id="welcome-name">–</strong>. Aquí está tu actividad.</p>
+        </div>
+        <button class="btn btn-primary" onclick="showPanel('panel-new-offer')">➕ Nueva Oferta</button>
+      </div>
+
+      <!-- Stats cards -->
+      <div class="stats-cards" style="margin-bottom:1.5rem;">
+        <div class="stats-card">
+          <div class="stats-card-label">Ofertas activas</div>
+          <div class="stats-card-num" id="stat-offers">–</div>
+          <div class="stats-card-change">🟢 En este momento</div>
+        </div>
+        <div class="stats-card">
+          <div class="stats-card-label">Total reservas</div>
+          <div class="stats-card-num" id="stat-reservations">–</div>
+          <div class="stats-card-change">📈 Acumulado</div>
+        </div>
+        <div class="stats-card">
+          <div class="stats-card-label">Ingresos recuperados</div>
+          <div class="stats-card-num" id="stat-revenue">–</div>
+          <div class="stats-card-change">💰 Total generado</div>
+        </div>
+        <div class="stats-card">
+          <div class="stats-card-label">Productos rescatados</div>
+          <div class="stats-card-num" id="stat-rescued">–</div>
+          <div class="stats-card-change">🌱 Impacto ambiental</div>
+        </div>
+      </div>
+
+      <!-- Quick actions -->
+      <div style="background:#fff;border-radius:var(--radius-lg);padding:1.5rem;border:1px solid var(--border);box-shadow:var(--shadow-sm);">
+        <h3 style="font-family:var(--font-display);font-weight:800;margin-bottom:1rem;">⚡ Acciones rápidas</h3>
+        <div style="display:flex;gap:.8rem;flex-wrap:wrap;">
+          <button class="btn btn-primary btn-sm" onclick="showPanel('panel-new-offer')">➕ Publicar oferta</button>
+          <button class="btn btn-secondary btn-sm" onclick="showPanel('panel-offers')">🏷️ Ver mis ofertas</button>
+          <button class="btn btn-secondary btn-sm" onclick="showPanel('panel-reservations')">📋 Ver reservas</button>
+          <a href="ofertas.html" class="btn btn-ghost btn-sm">👁️ Ver como usuario</a>
+        </div>
+      </div>
+
+      <!-- Impact card -->
+      <div style="background:var(--bg-dark);border-radius:var(--radius-lg);padding:1.8rem;margin-top:1.5rem;color:#fff;">
+        <h3 style="font-family:var(--font-display);font-weight:800;font-size:1.05rem;margin-bottom:1rem;">🌱 Tu impacto ambiental</h3>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;">
+          <div style="text-align:center;background:rgba(255,255,255,.06);border-radius:var(--radius-md);padding:1rem;">
+            <div style="font-size:1.5rem;font-family:var(--font-display);font-weight:900;color:#48d888;" id="imp-rescued">0 kg</div>
+            <div style="font-size:.78rem;color:rgba(255,255,255,.55);margin-top:.2rem;">Rescatados</div>
+          </div>
+          <div style="text-align:center;background:rgba(255,255,255,.06);border-radius:var(--radius-md);padding:1rem;">
+            <div style="font-size:1.5rem;font-family:var(--font-display);font-weight:900;color:#48d888;" id="imp-co2">0 kg</div>
+            <div style="font-size:.78rem;color:rgba(255,255,255,.55);margin-top:.2rem;">CO₂ evitado</div>
+          </div>
+          <div style="text-align:center;background:rgba(255,255,255,.06);border-radius:var(--radius-md);padding:1rem;">
+            <div style="font-size:1.5rem;font-family:var(--font-display);font-weight:900;color:#48d888;" id="imp-water">0 L</div>
+            <div style="font-size:.78rem;color:rgba(255,255,255,.55);margin-top:.2rem;">Agua ahorrada</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CHARTS -->
+      <div class="chart-grid" style="margin-top:1.5rem;">
+        <div class="chart-card">
+          <div class="chart-card-title">📈 Reservas por día (esta semana)</div>
+          <canvas id="chart-reservations" height="200"></canvas>
+        </div>
+        <div class="chart-card">
+          <div class="chart-card-title">🏷️ Ofertas por categoría</div>
+          <canvas id="chart-categories" height="200"></canvas>
+        </div>
+      </div>
+      <div class="chart-card" style="margin-top:1.2rem;">
+        <div class="chart-card-title">💰 Ingresos recuperados (últimos 7 días)</div>
+        <canvas id="chart-revenue" height="120"></canvas>
+      </div>
+    </section>
+
+    <!-- MIS OFERTAS -->
+    <section id="panel-offers" class="panel-section hidden">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem;">
+        <h2 style="font-family:var(--font-display);font-size:1.5rem;font-weight:900;">🏷️ Mis Ofertas</h2>
+        <button class="btn btn-primary btn-sm" onclick="showPanel('panel-new-offer')">➕ Nueva oferta</button>
+      </div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Producto</th>
+              <th>Precio original</th>
+              <th>Precio oferta</th>
+              <th>Descuento</th>
+              <th>Vencimiento</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="offers-tbody">
+            <tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--text-muted)">Cargando…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- NUEVA OFERTA -->
+    <section id="panel-new-offer" class="panel-section hidden">
+      <h2 style="font-family:var(--font-display);font-size:1.5rem;font-weight:900;margin-bottom:1.5rem;" id="form-offer-title">➕ Nueva Oferta</h2>
+      <div class="offer-form-card">
+        <form id="form-offer" novalidate>
+
+          <div class="form-group">
+            <label class="form-label" for="offer-name">Nombre del producto *</label>
+            <input class="form-control" type="text" id="offer-name" placeholder="Ej: Yogurt Gloria Fresa x4">
+          </div>
+
+          <div class="form-row-2">
+            <div class="form-group">
+              <label class="form-label" for="offer-category">Categoría *</label>
+              <select class="form-control" id="offer-category">
+                <option value="">Selecciona categoría…</option>
+                <option value="lácteos">🥛 Lácteos</option>
+                <option value="panadería">🍞 Panadería</option>
+                <option value="frutas">🍎 Frutas</option>
+                <option value="verduras">🥦 Verduras</option>
+                <option value="bebidas">🥤 Bebidas</option>
+                <option value="restaurante">🍽️ Comidas preparadas</option>
+                <option value="carnes">🥩 Carnes</option>
+                <option value="otro">📦 Otro</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="offer-emoji">Emoji del producto</label>
+              <input class="form-control" type="text" id="offer-emoji" placeholder="🍱" maxlength="2" style="font-size:1.4rem;text-align:center;">
+              <span class="form-hint">Ingresa un emoji representativo</span>
+            </div>
+          </div>
+
+          <div class="form-row-3">
+            <div class="form-group">
+              <label class="form-label" for="offer-original">Precio original (S/) *</label>
+              <input class="form-control" type="number" id="offer-original" placeholder="0.00" step="0.01" min="0">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="offer-price">Precio con descuento (S/) *</label>
+              <input class="form-control" type="number" id="offer-price" placeholder="0.00" step="0.01" min="0">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="offer-stock">Unidades disponibles</label>
+              <input class="form-control" type="number" id="offer-stock" placeholder="1" min="1" value="1">
+            </div>
+          </div>
+
+          <div id="discount-preview"></div>
+
+          <div class="form-group" style="margin-top:.5rem;">
+            <label class="form-label" for="offer-expiry">Fecha de vencimiento *</label>
+            <input class="form-control" type="date" id="offer-expiry">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="offer-desc">Descripción (opcional)</label>
+            <textarea class="form-control" id="offer-desc" rows="2" placeholder="Describe brevemente el producto…" style="resize:vertical;"></textarea>
+          </div>
+
+          <div style="display:flex;gap:.8rem;flex-wrap:wrap;">
+            <button type="submit" class="btn btn-primary">💾 Publicar oferta</button>
+            <button type="button" class="btn btn-secondary hidden" id="btn-cancel-edit">✕ Cancelar edición</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- RESERVAS -->
+    <section id="panel-reservations" class="panel-section hidden">
+      <h2 style="font-family:var(--font-display);font-size:1.5rem;font-weight:900;margin-bottom:1.5rem;">📋 Reservas recibidas</h2>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Código</th>
+              <th>Fecha</th>
+              <th>Total</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody id="reservations-tbody">
+            <tr><td colspan="4" style="text-align:center;padding:2rem;color:var(--text-muted)">Cargando…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- PERFIL NEGOCIO -->
+    <section id="panel-profile" class="panel-section hidden">
+      <h2 style="font-family:var(--font-display);font-size:1.5rem;font-weight:900;margin-bottom:1.5rem;">⚙️ Información del negocio</h2>
+      <div class="offer-form-card">
+
+        <div style="text-align:center;margin-bottom:1.5rem;">
+          <div style="position:relative;display:inline-block;">
+            <div id="biz-photo-avatar" style="width:90px;height:90px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--accent));display:flex;align-items:center;justify-content:center;font-size:2.2rem;color:#fff;margin:0 auto;"></div>
+            <label for="biz-photo-input" style="position:absolute;bottom:0;right:-6px;width:30px;height:30px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:.85rem;box-shadow:var(--shadow-sm);">📷</label>
+            <input type="file" accept="image/*" id="biz-photo-input" style="display:none;">
+          </div>
+          <div style="font-size:.8rem;color:var(--text-muted);margin-top:.5rem;">Esta foto se muestra a los usuarios en el mapa y en las ofertas</div>
+        </div>
+
+        <form id="form-biz-profile">
+          <div class="form-row-2">
+            <div class="form-group">
+              <label class="form-label">Nombre del negocio</label>
+              <input class="form-control" type="text" id="b-name" placeholder="Nombre del negocio">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Tipo de negocio</label>
+              <select class="form-control" id="b-type">
+                <option value="restaurante">Restaurante</option>
+                <option value="supermercado">Supermercado</option>
+                <option value="panaderia">Panadería</option>
+                <option value="cafeteria">Cafetería</option>
+                <option value="otro">Otro</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row-2">
+            <div class="form-group">
+              <label class="form-label">Teléfono</label>
+              <input class="form-control" type="tel" id="b-phone" placeholder="987 654 321">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Correo electrónico</label>
+              <input class="form-control" type="email" id="b-email" disabled style="opacity:.6;cursor:not-allowed">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Dirección</label>
+            <input class="form-control" type="text" id="b-address" placeholder="Av. Ejemplo 123, Distrito">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Descripción del negocio</label>
+            <textarea class="form-control" id="b-description" rows="3" placeholder="Cuéntales a los usuarios qué ofreces..."></textarea>
+          </div>
+          <div class="form-row-2">
+            <div class="form-group">
+              <label class="form-label">Horario de atención</label>
+              <input class="form-control" type="text" id="b-hours" placeholder="Lun a Dom, 9:00 am - 9:00 pm">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Sitio web / Instagram (opcional)</label>
+              <input class="form-control" type="text" id="b-website" placeholder="instagram.com/minegocio">
+            </div>
+          </div>
+          <!-- Ubicación en mapa -->
+          <div class="form-group" style="margin-top:.5rem;">
+            <label class="form-label">📌 Ubicación en el mapa</label>
+            <div style="display:flex;gap:.5rem;margin-bottom:.4rem;">
+              <input class="form-control" type="text" id="b-loc-search" placeholder="Busca tu dirección…" style="flex:1;">
+              <button type="button" onclick="searchBizLocation()" style="padding:.38rem .8rem;border-radius:8px;background:var(--primary);color:#fff;border:none;font-size:.78rem;font-weight:600;cursor:pointer;">🔍</button>
+              <button type="button" onclick="useBizGPS()" style="padding:.38rem .8rem;border-radius:8px;background:#4285f4;color:#fff;border:none;font-size:.78rem;font-weight:600;cursor:pointer;">📍 GPS</button>
+            </div>
+            <div id="panel-map-picker" style="height:200px;border-radius:10px;border:1.5px solid var(--border);"></div>
+            <div style="font-size:.7rem;color:var(--text-muted);margin-top:.3rem;">Arrastra el marcador para ajustar la posición exacta</div>
+            <input type="hidden" id="b-lat">
+            <input type="hidden" id="b-lng">
+          </div>
+
+          <button type="submit" class="btn btn-primary">💾 Guardar cambios</button>
+        </form>
+
+        <div class="panel-nav-divider" style="margin:1.5rem 0;"></div>
+        <button class="btn btn-danger btn-sm" onclick="logoutBusiness()">
+          🚪 Cerrar sesión del panel
+        </button>
+      </div>
+    </section>
+
+  </main>
+</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="js/navbar.js"></script>
+<script src="js/app.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/extras.js"></script>
+<script src="js/negocios.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const biz = Auth.getBusiness();
+    if (biz) {
+      const welcomeEl = document.getElementById('welcome-name');
+      if (welcomeEl) welcomeEl.textContent = biz.name;
+
+      // Render biz profile info
+      const profileDiv = document.getElementById('biz-profile-info');
+      if (profileDiv) {
+        profileDiv.innerHTML = `
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+            <div><div style="font-size:.8rem;color:var(--text-muted);font-weight:600;margin-bottom:.2rem;">NOMBRE</div><div style="font-weight:700;">${escapeHTML(biz.name)}</div></div>
+            <div><div style="font-size:.8rem;color:var(--text-muted);font-weight:600;margin-bottom:.2rem;">TIPO</div><div>${escapeHTML(biz.type)}</div></div>
+            <div><div style="font-size:.8rem;color:var(--text-muted);font-weight:600;margin-bottom:.2rem;">CORREO</div><div>${escapeHTML(biz.email)}</div></div>
+            <div><div style="font-size:.8rem;color:var(--text-muted);font-weight:600;margin-bottom:.2rem;">TELÉFONO</div><div>${escapeHTML(biz.phone)}</div></div>
+            <div style="grid-column:1/-1"><div style="font-size:.8rem;color:var(--text-muted);font-weight:600;margin-bottom:.2rem;">DIRECCIÓN</div><div>${escapeHTML(biz.address)}</div></div>
+          </div>`;
+      }
+
+      // Set default expiry date to tomorrow
+      const expiry = document.getElementById('offer-expiry');
+      if (expiry) {
+        const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate()+1);
+        expiry.min = new Date().toISOString().split('T')[0];
+        expiry.value = tomorrow.toISOString().split('T')[0];
+      }
+
+      // Update impact section
+      const reservations = Store.get('rf_reservations', []);
+      const rescued = reservations.reduce((s,r) => s + (r.items||[]).reduce((ss,i) => ss + (i.qty||1), 0), 0);
+      const impRescued = document.getElementById('imp-rescued');
+      const impCo2    = document.getElementById('imp-co2');
+      const impWater  = document.getElementById('imp-water');
+      if (impRescued) impRescued.textContent = rescued + ' kg';
+      if (impCo2)     impCo2.textContent     = (rescued * 0.5).toFixed(1) + ' kg';
+      if (impWater)   impWater.textContent   = (rescued * 150) + ' L';
+
+      // Charts
+      setTimeout(initCharts, 200);
+    }
+  });
+
+  function initCharts() {
+    if (typeof Chart === 'undefined') return;
+    const isDark = Store.get('rf_theme') === 'dark';
+    const textColor  = isDark ? '#7aaa88' : '#5a7060';
+    const gridColor  = isDark ? '#1a2e22' : '#e8f0ec';
+
+    // Days of week
+    const days = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
+    const reservCounts = [2, 5, 3, 8, 6, 12, 9]; // demo data
+    const revenue      = [24, 58, 35, 96, 72, 144, 108];
+
+    // Chart 1: Reservations bar
+    const ctx1 = document.getElementById('chart-reservations');
+    if (ctx1) new Chart(ctx1, {
+      type: 'bar',
+      data: {
+        labels: days,
+        datasets: [{ label: 'Reservas', data: reservCounts,
+          backgroundColor: 'rgba(26,158,92,0.7)', borderColor: '#1a9e5c',
+          borderWidth: 2, borderRadius: 6 }]
+      },
+      options: {
+        responsive: true, plugins: { legend: { display: false } },
+        scales: {
+          x: { ticks: { color: textColor }, grid: { color: gridColor } },
+          y: { ticks: { color: textColor }, grid: { color: gridColor }, beginAtZero: true }
+        }
+      }
+    });
+
+    // Chart 2: Categories doughnut
+    const offers = Store.get('rf_offers',[]).filter(o => o.active);
+    const cats = {}; offers.forEach(o => { cats[o.category] = (cats[o.category]||0)+1; });
+    const ctx2 = document.getElementById('chart-categories');
+    if (ctx2) new Chart(ctx2, {
+      type: 'doughnut',
+      data: {
+        labels: Object.keys(cats),
+        datasets: [{ data: Object.values(cats),
+          backgroundColor: ['#1a9e5c','#f0a500','#3498db','#e74c3c','#8e44ad','#e67e22','#27ae60','#2c3e50'],
+          borderWidth: 2, borderColor: isDark ? '#111916' : '#fff' }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { position: 'right', labels: { color: textColor, font: { size: 11 } } } }
+      }
+    });
+
+    // Chart 3: Revenue line
+    const ctx3 = document.getElementById('chart-revenue');
+    if (ctx3) new Chart(ctx3, {
+      type: 'line',
+      data: {
+        labels: days,
+        datasets: [{ label: 'Ingresos (S/)', data: revenue,
+          borderColor: '#f0a500', backgroundColor: 'rgba(240,165,0,0.1)',
+          borderWidth: 2.5, pointBackgroundColor: '#f0a500',
+          pointRadius: 4, fill: true, tension: 0.4 }]
+      },
+      options: {
+        responsive: true, plugins: { legend: { display: false } },
+        scales: {
+          x: { ticks: { color: textColor }, grid: { color: gridColor } },
+          y: { ticks: { color: textColor, callback: v => 'S/ '+v }, grid: { color: gridColor }, beginAtZero: true }
+        }
+      }
+    });
+  }
+</script>
+</body>
+</html>

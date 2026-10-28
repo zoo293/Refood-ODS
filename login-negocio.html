@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ingresar como Negocio — REFOOD PERÚ</title>
+  <meta name="theme-color" content="#1a9e5c">
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="css/styles.css">
+  <style>.auth-page-bg {
+      min-height:100vh; padding-top:var(--nav-h);
+      background: linear-gradient(135deg,#0d2b1a 0%,#1a4f30 100%);
+      display:flex; align-items:center; justify-content:center;
+      padding: calc(var(--nav-h) + 2rem) 1.5rem 2rem;
+    }
+    .biz-login-card { background:#fff; border-radius:var(--radius-xl); padding:2.5rem; width:100%; max-width:460px; box-shadow:var(--shadow-lg); }
+    .demo-info { background:var(--accent-light); border:1px solid #f0c040; border-radius:var(--radius-sm); padding:.9rem 1rem; margin-bottom:1.2rem; font-size:.83rem; color:#7a5500; }
+  </style>
+</head>
+<body>
+
+<div class="auth-page-bg">
+  <div class="biz-login-card fade-in">
+    <div class="auth-logo">
+      <div class="logo-big" style="background:linear-gradient(135deg,var(--bg-dark),#2d5a3d)">🏪</div>
+      <h1 class="auth-title">Panel de Negocio</h1>
+      <p class="auth-subtitle">Ingresa para gestionar tus ofertas y reservas</p>
+    </div>
+
+    <div class="demo-info">
+      💡 <strong>Demo:</strong> Regístra tu negocio o usa el acceso rápido demo abajo.
+    </div>
+
+    <form id="form-biz-login" novalidate>
+      <div class="form-group">
+        <label class="form-label" for="biz-login-email">Correo del negocio</label>
+        <div class="input-icon-wrap">
+          <span class="input-icon">📧</span>
+          <input class="form-control" type="email" id="biz-login-email" placeholder="negocio@correo.com">
+        </div>
+        <span class="form-error"></span>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="biz-login-password">Contraseña</label>
+        <div class="input-icon-wrap">
+          <span class="input-icon">🔒</span>
+          <input class="form-control" type="password" id="biz-login-password" placeholder="Tu contraseña">
+          <span class="input-icon toggle-pass" id="toggle-biz-pass" style="right:.9rem;left:auto;pointer-events:all;cursor:pointer">👁️</span>
+        </div>
+        <span class="form-error"></span>
+      </div>
+      <button type="submit" class="btn btn-primary btn-full btn-lg" style="margin-top:.5rem">
+        📊 Ingresar al panel
+      </button>
+    </form>
+
+    <div class="auth-divider"><span>o acceso rápido para demo</span></div>
+
+    <button class="btn btn-secondary btn-full" onclick="quickBizDemo()">
+      ⚡ Entrar como negocio demo
+    </button>
+
+    <div class="auth-switch mt-2">
+      ¿No tienes cuenta de negocio? <a href="registro-negocio.html">Registra tu negocio</a>
+    </div>
+    <div class="auth-switch mt-1" style="font-size:.82rem;">
+      ¿Eres usuario? <a href="login.html">Inicia sesión aquí</a>
+    </div>
+  </div>
+</div>
+
+<script src="js/navbar.js"></script>
+<script src="js/app.js"></script>
+<script src="js/auth.js"></script>
+<script>
+  document.getElementById('toggle-biz-pass')?.addEventListener('click', function() {
+    const inp = document.getElementById('biz-login-password');
+    inp.type = inp.type === 'password' ? 'text' : 'password';
+    this.textContent = inp.type === 'password' ? '👁️' : '🙈';
+  });
+
+  function quickBizDemo() {
+    const accounts = Store.get('rf_businesses_accounts', []);
+    const demoEmail = 'demo@plazavea.pe';
+    let demo = accounts.find(b => b.email === demoEmail);
+    if (!demo) {
+      demo = {
+        id: 'b1', name: 'Plaza Vea San Isidro', type: 'supermercado',
+        address: 'Av. Javier Prado Este 180, San Isidro', phone: '01-234-5678',
+        email: demoEmail, password: btoa('demo123'), ruc: '20100128056',
+        logo: '🏪', rating: 4.5, totalOffers: 12,
+        lat: -12.0927, lng: -77.0312,
+        createdAt: new Date().toISOString(), active: true
+      };
+      accounts.push(demo);
+      Store.set('rf_businesses_accounts', accounts);
+    }
+    Store.set('rf_current_business', { id: demo.id, name: demo.name, type: demo.type, address: demo.address, phone: demo.phone, email: demo.email });
+    showToast(`¡Bienvenido, ${demo.name}! 📊`, 'success');
+    setTimeout(() => window.location.href = 'panel-negocio.html', 900);
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    if (Auth.isBusiness()) window.location.href = 'panel-negocio.html';
+  });
+</script>
+</body>
+</html>
